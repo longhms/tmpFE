@@ -49,7 +49,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="text"
-            className="form-control"
+            className= {`form-control${errors.loginId ? ' is-invalid' : ''}`} // class is-invalid nếu có lỗi để highlight
             {...register('loginId')}
           />
           {/* Hiển thị lỗi validation của từng field ngay bên dưới input */}
@@ -65,7 +65,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
           <i className="relative">グループ:<span className="note-red">*</span></i>
         </label>
         <div className="col-sm col-sm-10">
-          <select className="form-control" {...register('departmentId')}>
+          <select className={`form-control${errors.departmentId ? ' is-invalid' : ''}`} {...register('departmentId')}>
             {/* Option đầu rỗng: bắt buộc chọn */}
             <option value="">選択してください</option>
             {departments.map((d) => (
@@ -88,7 +88,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="text"
-            className="form-control"
+            className={`form-control${errors.employeeName ? ' is-invalid' : ''}`}
             {...register('employeeName')}
           />
           {errors.employeeName && (
@@ -105,7 +105,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="text"
-            className="form-control"
+            className={`form-control${errors.employeeNameKana ? ' is-invalid' : ''}`}
             {...register('employeeNameKana')}
           />
           {errors.employeeNameKana && (
@@ -127,6 +127,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
               render={({ field }) => (
                 <DatePicker
                   ref={birthDateRef}
+                  className={`form-control${errors.birthDate ? ' is-invalid' : ''}`}
                   placeholderText="yyyy/MM/dd"
                   // Chuyển chuỗi 'yyyy/MM/dd' → Date object để DatePicker hiển thị đúng
                   selected={
@@ -162,7 +163,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="text"
-            className="form-control"
+            className={`form-control${errors.employeeEmail ? ' is-invalid' : ''}`}
             {...register('employeeEmail')}
           />
           {errors.employeeEmail && (
@@ -179,7 +180,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="text"
-            className="form-control"
+            className={`form-control${errors.employeeTelephone ? ' is-invalid' : ''}`}
             {...register('employeeTelephone')}
           />
           {errors.employeeTelephone && (
@@ -196,7 +197,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="password"
-            className="form-control"
+            className={`form-control${errors.loginPassword ? ' is-invalid' : ''}`}
             {...register('loginPassword')}
           />
           {errors.loginPassword && (
@@ -213,7 +214,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="password"
-            className="form-control"
+            className={`form-control${errors.loginPasswordConfirm ? ' is-invalid' : ''}`}
             {...register('loginPasswordConfirm')}
           />
           {errors.loginPasswordConfirm && (

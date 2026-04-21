@@ -19,6 +19,8 @@ import { useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { useDepartments } from './useDepartments';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { employeeSchema } from '@/lib/validation/employee';
 import { useCertifications } from './useCertifications';
 import {
   EmployeeFormData,
@@ -64,7 +66,9 @@ export function useADM004() {
     formState: { errors },
     reset,
   } = useForm<EmployeeFormData>({
+    resolver: zodResolver(employeeSchema), // Kết nối Zod schema để validate
     defaultValues: DEFAULT_FORM_VALUES,
+    mode: 'onChange', // Validate ngay khi người dùng nhập
   });
   const { departments, departmentError } = useDepartments(); // useDepartments từ 
   const { certifications, certificationError } = useCertifications(); // danh sách chứng chỉ JP

@@ -101,6 +101,7 @@ export default function CertificationFields({
               render={({ field }) => (
                 <DatePicker
                   ref={startDateRef}
+                  className={`form-control${errors.certificationStartDate ? ' is-invalid' : ''}`}
                   placeholderText="yyyy/MM/dd"
                   // disabled khi chưa chọn chứng chỉ
                   disabled={!isCertSelected}
@@ -146,6 +147,7 @@ export default function CertificationFields({
               render={({ field }) => (
                 <DatePicker
                   ref={endDateRef}
+                  className={`form-control${errors.certificationEndDate ? ' is-invalid' : ''}`}
                   placeholderText="yyyy/MM/dd"
                   disabled={!isCertSelected}
                   selected={
@@ -184,7 +186,7 @@ export default function CertificationFields({
         <div className="col-sm col-sm-10">
           <input
             type="text"
-            className="form-control"
+            className={`form-control${errors.score ? ' is-invalid' : ''}`}
             // disabled thuộc tính HTML: react-hook-form tự bỏ qua field disabled khi submit
             disabled={!isCertSelected}
             {...register('score')}
