@@ -848,6 +848,10 @@ cursor: pointer;
   display: block;
 }
 
+.invalid-feedback.d-block {
+  display: block;
+}
+
 @media (max-width: 992px) {
   .alert-validate::before {
     visibility: visible;
@@ -884,7 +888,7 @@ cursor: pointer;
   background: url(/assets/images/ic_calendar.svg) no-repeat 0 0;
 }
 .react-datepicker-popper {
-  z-index: 20;
+  z-index: 1000 !important;
 }
 
 /* Bỏ icon ! cho select (dropdown có arrow riêng) */
@@ -896,5 +900,9 @@ select.form-control.is-invalid {
 /* Bỏ icon ! cho datepicker (có calendar icon riêng) */
 .datepicker-wrapper .form-control.is-invalid {
   background-image: none;
-  padding-right: inherit;
+  padding-right: 35px;
+}
+
+.datepicker-wrapper input.form-control {
+  cursor: pointer;
 }

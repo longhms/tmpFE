@@ -9,6 +9,7 @@
 import { apiClient } from '@/lib/api/client';
 import { EmployeeListApiResponse } from '@/types/employee';
 import { SortField, SortOrder } from '@/lib/constants/employee';
+import { formatMessage } from '@/lib/constants/messages';
 
 /**
  * Interface dinh nghia cac tham so truyen vao API lay danh sach nhan vien.
@@ -56,3 +57,32 @@ export const fetchEmployeeList = async (
   return response.data;
 };
 
+
+/**
+ * Get API check trùng loginId
+ * 
+ * @param loginId loginId muốn check trùng
+ * @returns true = đã trùng loginId
+ */
+export const checkLoginIdDuplicate =async (loginId:string): Promise<boolean> => {
+  const res = await apiClient.get(`/employee/check-employee-login-id?loginId=${loginId}`);
+  return res.data.code !== 200;
+}
+
+/**
+ *  check phong ban va chung chi co ton tai khong
+ * @param departmentId phong ban
+ * @param certificationId chung chi
+ * @returns message ket qua check
+ */
+export const checkReferences =async (departmentId:string, certificationId: string):Promise<string> => {
+  const params = new URLSearchParams();
+  if (departmentId) params.set('departmentId', departmentId);
+  if (certificationId) params.set('certificationId', certificationId);
+
+  const res = await apiClient.get(`/employee/validate-refs?${params.toString()}`);
+  if (res.data.code === 200) return '';
+
+  const { code, params: msgParams } = res.data.message;
+  return formatMessage(code, msgParams);
+}

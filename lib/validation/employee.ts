@@ -6,6 +6,7 @@ const dateString = z.string().refine((date) => date === '' || /^\d{4}\/\d{2}\/\d
     message: formatMessage('ER011', ['日付', 'yyyy/MM/dd']),
 });
 
+//check validate cơ bản
 export const employeeSchema = z.object({
     loginId: z
         .string()
@@ -28,7 +29,7 @@ export const employeeSchema = z.object({
         .string()
         .min(1, formatMessage('ER001', ['カタカナ氏名']))
         .max(125, formatMessage('ER006', ['カタカナ氏名', '125']))
-        .regex(/^[\uFF65-\uFF9F]+$/, formatMessage('ER009', ['カタカナ氏名'])),
+        .regex(/^[\uFF65-\uFF9F]+$/, formatMessage('ER009', ['カタカナ氏名（半角カナ）'])),
 
     birthDate: dateString
         .min(1, formatMessage('ER001', ['生年月日'])),
@@ -43,7 +44,8 @@ export const employeeSchema = z.object({
         .string()
         .min(1, formatMessage('ER001', ['電話番号']))
         .max(50, formatMessage('ER006', ['電話番号', '50']))
-        .regex(/^[0-9\-]+$/, formatMessage('ER018', ['電話番号'])),
+        .regex(/^[0-9\-]+$/, formatMessage('ER018', ['電話番号']))
+        .regex(/^[\x00-\x7F]+$/, formatMessage('ER008', ['電話番号'])),
     
     loginPassword: z
         .string()
@@ -56,7 +58,9 @@ export const employeeSchema = z.object({
         .string()
         .min(1, formatMessage('ER001', ['パスワード（確認）'])),
 
-    certificationId: z.string(),
+    certificationId: z
+        .string()
+        .regex(/^[0-9]*$/, formatMessage('ER018', ['資格ID'])),
     certificationStartDate: dateString,
     certificationEndDate: dateString,
     
@@ -66,29 +70,32 @@ export const employeeSchema = z.object({
 
 })
 
+//check confirmPassword phải trùng password
 .refine((checkConfirmPassword) => checkConfirmPassword.loginPassword === checkConfirmPassword.loginPasswordConfirm, {
     message: formatMessage('ER017'),
     path: ['loginPasswordConfirm'],
 })
 
-.refine((data) => !data.certificationId || data.certificationStartDate !== '', {
+//check bắt buộc 3 trường nếu đã chọn certification
+.refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.certificationStartDate !== '', {
     message: formatMessage('ER001', ['資格交付日']),
     path: ['certificationStartDate'],
 })
 
-.refine((data) => !data.certificationId || data.certificationEndDate !== '', {
+.refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.certificationEndDate !== '', {
     message: formatMessage('ER001', ['失効日']),
     path: ['certificationEndDate'],
 })
 
-.refine((data) => !data.certificationId || data.score !== '', {
+.refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.score !== '', {
     message: formatMessage('ER001', ['点数']),
     path: ['score'],
 })
 
-.refine((data) => {
-    if (!data.certificationId || !data.certificationStartDate || !data.certificationEndDate) return true;
-    return data.certificationEndDate > data.certificationStartDate;
+//check ngày bắt đầu phải trước hơn ngày kết thúc
+.refine((isEndAfterStart) => {
+    if (!isEndAfterStart.certificationId || !isEndAfterStart.certificationStartDate || !isEndAfterStart.certificationEndDate) return true;
+    return isEndAfterStart.certificationEndDate > isEndAfterStart.certificationStartDate;
 }, { message: formatMessage('ER012'), path: ['certificationEndDate'] });
 
 // export type EmployeeFormData = z.infer<typeof employeeSchema>;

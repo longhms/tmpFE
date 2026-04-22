@@ -139,6 +139,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
                   onChange={(date: Date | null) =>
                     field.onChange(date ? format(date, 'yyyy/MM/dd') : '')
                   }
+                  onBlur={field.onBlur}
                   dateFormat="yyyy/MM/dd"
                 />
               )}

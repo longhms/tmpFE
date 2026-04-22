@@ -113,6 +113,7 @@ export default function CertificationFields({
                   onChange={(date: Date | null) =>
                     field.onChange(date ? format(date, 'yyyy/MM/dd') : '')
                   }
+                  onBlur={field.onBlur}
                   dateFormat="yyyy/MM/dd"
                 />
               )}
@@ -158,6 +159,7 @@ export default function CertificationFields({
                   onChange={(date: Date | null) =>
                     field.onChange(date ? format(date, 'yyyy/MM/dd') : '')
                   }
+                  onBlur={field.onBlur}
                   dateFormat="yyyy/MM/dd"
                 />
               )}

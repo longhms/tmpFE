@@ -15,7 +15,8 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { useDepartments } from './useDepartments';
@@ -28,6 +29,8 @@ import {
   SESSION_KEY_EMPLOYEE_DATA,
   SESSION_KEY_MODE,
 } from '@/types/adm004';
+import { checkLoginIdDuplicate, checkReferences } from '@/services/employeeService';
+import { formatMessage } from '@/lib/constants/messages';
 
 /** Giá trị mặc định cho toàn bộ form (tất cả rỗng) */
 const DEFAULT_FORM_VALUES: EmployeeFormData = {
@@ -68,8 +71,11 @@ export function useADM004() {
   } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema), // Kết nối Zod schema để validate
     defaultValues: DEFAULT_FORM_VALUES,
-    mode: 'onChange', // Validate ngay khi người dùng nhập
+    mode: 'onBlur', // Validate ngay khi người dùng bấm vào trường
+    shouldFocusError: true
   });
+  const [formError, setFormError] = useState('');
+  const errorRef = useRef<HTMLLIElement>(null); 
   const { departments, departmentError } = useDepartments(); // useDepartments từ 
   const { certifications, certificationError } = useCertifications(); // danh sách chứng chỉ JP
   const selectedCertId = watch('certificationId'); // watch('certificationId') re-render component mỗi khi giá trị thay đổi
@@ -96,10 +102,11 @@ export function useADM004() {
   const handleCertificationChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       // Khi bỏ chọn chứng chỉ (value về '') → xóa 3 field phụ để tránh gửi data thừa lên ADM005
-      if (!e.target.value) {
-        setValue('certificationStartDate', '');
-        setValue('certificationEndDate', '');
-        setValue('score', '');
+      const value = e.target.value;
+      if (!value) {
+        setValue('certificationStartDate', '', {shouldValidate: true});
+        setValue('certificationEndDate', '', {shouldValidate: true});
+        setValue('score', '', {shouldValidate: true});
       }
     },
     [setValue]
@@ -108,7 +115,22 @@ export function useADM004() {
 
   // ── Xử lý nút 確認 (Confirm) ──
   // handleSubmit chạy validation trước; nếu pass mới gọi callback
-  const handleConfirm = handleSubmit((data: EmployeeFormData) => {
+  //check trùng và check tồn tại từ api.
+  const handleConfirm = handleSubmit(async (data: EmployeeFormData) => {
+    setFormError('');
+    const [refsError, isDoublicate] = await Promise.all([
+      checkReferences(data.departmentId, data.certificationId),
+      mode === 'add' ? checkLoginIdDuplicate(data.loginId) : Promise.resolve(false),
+    ])
+
+    const errorMsg = refsError || (isDoublicate ? formatMessage('ER003', ['アカウント名']) : '');
+
+    if (errorMsg) {
+      flushSync(() => setFormError(errorMsg));
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    
     // Lưu dữ liệu đã validate vào sessionStorage để ADM005 đọc
     sessionStorage.setItem(SESSION_KEY_EMPLOYEE_DATA, JSON.stringify(data));
     router.push('/employees/confirm');
@@ -132,6 +154,9 @@ export function useADM004() {
     register,
     control,
     errors,
+    //loi gui tu API
+    formError,
+    errorRef,
     // Dữ liệu dropdown
     departments,
     departmentError,
