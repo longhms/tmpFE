@@ -20,6 +20,8 @@ type Props = {
   departmentName: string;
   /** Tên chứng chỉ đã tra cứu từ certifications list */
   certificationName: string;
+  /** true khi đang submit — disable button OK để tránh double-click */
+  submitting: boolean;
   /** Handler nút OK (lưu vào DB) */
   onOK: () => void;
   /** Handler nút 戻る (quay lại ADM004) */
@@ -33,6 +35,7 @@ export default function EmployeeConfirmForm({
   employeeFormData,
   departmentName,
   certificationName,
+  submitting,
   onOK,
   onBack,
 }: Props) {
@@ -67,6 +70,7 @@ export default function EmployeeConfirmForm({
               <button
                 type="button"
                 onClick={onOK}
+                disabled={submitting}
                 className="btn btn-primary btn-sm"
               >
                 OK
@@ -74,6 +78,7 @@ export default function EmployeeConfirmForm({
               <button
                 type="button"
                 onClick={onBack}
+                disabled={submitting}
                 className="btn btn-secondary btn-sm"
               >
                 戻る

@@ -44,10 +44,6 @@ type Props = {
   onConfirm: React.FormEventHandler<HTMLFormElement>;
   /** Handler nút 戻る */
   onBack: () => void;
-
-  formError: string;
-
-  errorRef: React.RefObject<HTMLLIElement | null>;
 };
 
 /**
@@ -62,15 +58,12 @@ export default function EmployeeInputForm({
   departmentError,
   certifications,
   certificationError,
-  formError,
-  errorRef,
   isCertSelected,
   onCertificationChange,
   onConfirm,
   onBack,
 }: Props) {
-  // Kiểm tra có lỗi API nào cần hiển thị trong box-err không
-  const apiError = formError || departmentError || certificationError;
+  const apiError = departmentError || certificationError;
 
   return (
     <div className="row">
@@ -81,7 +74,7 @@ export default function EmployeeInputForm({
 
           {/* Box lỗi chung: hiển thị lỗi gọi API dropdown (phòng ban / chứng chỉ) */}
           {apiError && (
-            <li ref={errorRef} className="box-err">
+            <li className="box-err">
               <div className="box-err-content">{apiError}</div>
             </li>
           )}

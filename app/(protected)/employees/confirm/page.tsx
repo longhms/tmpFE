@@ -21,6 +21,7 @@ export default function EmployeeConfirmPage() {
     employeeFormData,
     departmentName,
     certificationName,
+    submitting,
     handleOK,
     handleBack,
   } = useADM005();
@@ -30,6 +31,7 @@ export default function EmployeeConfirmPage() {
       employeeFormData={employeeFormData}
       departmentName={departmentName}
       certificationName={certificationName}
+      submitting={submitting}
       onOK={handleOK}
       onBack={handleBack}
     />

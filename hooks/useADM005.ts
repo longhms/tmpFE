@@ -17,7 +17,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDepartments } from './useDepartments';
 import { useCertifications } from './useCertifications';
-import { EmployeeFormData, SESSION_KEY_EMPLOYEE_DATA } from '@/types/adm004';
+import {
+  EmployeeFormData,
+  SESSION_KEY_EMPLOYEE_DATA,
+  SESSION_KEY_COMPLETE_MESSAGE,
+  SESSION_KEY_ERROR_MESSAGE,
+} from '@/types/adm004';
+import { createEmployee } from '@/services/employeeService';
+import { formatMessage } from '@/lib/constants/messages';
 
 export function useADM005() {
   const router = useRouter();
@@ -68,12 +75,29 @@ export function useADM005() {
     [certifications, employeeFormData?.certificationId]
   );
 
-  // ── handleOK: lưu nhân viên vào DB → chuyển sang màn hoàn thành (ADM006) ──
-  // TODO: gọi API POST /employee (add) hoặc PUT /employee/{id} (edit),
-  //       xử lý lỗi, xóa SESSION_KEY_EMPLOYEE_DATA khi thành công
-  const handleOK = useCallback(() => {
-    router.push('/employees/complete');
-  }, [router]);
+  const [submitting, setSubmitting] = useState(false);
+
+  // ── handleOK: gọi POST /employee, thành công → chuyển ADM006 ──
+  const handleOK = useCallback(async () => {
+    if (!employeeFormData || submitting) return;
+    setSubmitting(true);
+    try {
+      const result = await createEmployee(employeeFormData);
+      if (result.ok) {
+        sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
+        sessionStorage.setItem(SESSION_KEY_COMPLETE_MESSAGE, result.message);
+        router.push('/employees/complete');
+      } else {
+        sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, result.message || formatMessage('ER015'));
+        router.push('/employees/system-error');
+      }
+    } catch {
+      sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, formatMessage('ER015'));
+      router.push('/employees/system-error');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [employeeFormData, submitting, router]);
 
   // ── handleBack: quay lại ADM004 với dữ liệu form vẫn còn trong sessionStorage ──
   // router.back() đảm bảo ADM004 khôi phục đúng trạng thái form trước đó
@@ -85,6 +109,7 @@ export function useADM005() {
     employeeFormData,
     departmentName,
     certificationName,
+    submitting,
     handleOK,
     handleBack,
   };

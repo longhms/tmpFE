@@ -25,8 +25,6 @@ export default function EmployeeEditPage() {
     departmentError,
     certifications,
     certificationError,
-    formError,
-    errorRef,
     isCertSelected,
     handleCertificationChange,
     handleConfirm,
@@ -42,8 +40,6 @@ export default function EmployeeEditPage() {
       departmentError={departmentError}
       certifications={certifications}
       certificationError={certificationError}
-      formError={formError}
-      errorRef={errorRef}
       isCertSelected={isCertSelected}
       onCertificationChange={handleCertificationChange}
       onConfirm={handleConfirm}

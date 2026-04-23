@@ -10,6 +10,10 @@ import { apiClient } from '@/lib/api/client';
 import { EmployeeListApiResponse } from '@/types/employee';
 import { SortField, SortOrder } from '@/lib/constants/employee';
 import { formatMessage } from '@/lib/constants/messages';
+import { EmployeeFormData } from '@/types/adm004';
+import { CreateEmployeePayload, CreateEmployeeResult } from '@/types/employee';
+
+
 
 /**
  * Interface dinh nghia cac tham so truyen vao API lay danh sach nhan vien.
@@ -64,25 +68,78 @@ export const fetchEmployeeList = async (
  * @param loginId loginId muốn check trùng
  * @returns true = đã trùng loginId
  */
-export const checkLoginIdDuplicate =async (loginId:string): Promise<boolean> => {
+export const checkLoginIdDuplicate = async (loginId: string): Promise<boolean> => {
   const res = await apiClient.get(`/employee/check-employee-login-id?loginId=${loginId}`);
   return res.data.code !== 200;
 }
 
 /**
- *  check phong ban va chung chi co ton tai khong
- * @param departmentId phong ban
- * @param certificationId chung chi
- * @returns message ket qua check
+ * Check department có tồn tại không.
+ * @returns true = KHÔNG tồn tại (có lỗi ER004)
  */
-export const checkReferences =async (departmentId:string, certificationId: string):Promise<string> => {
-  const params = new URLSearchParams();
-  if (departmentId) params.set('departmentId', departmentId);
-  if (certificationId) params.set('certificationId', certificationId);
+export const checkDepartmentNotExists = async (departmentId: string): Promise<boolean> => {
+  const res = await apiClient.get(`/employee/validate-refs?departmentId=${departmentId}`);
+  return res.data.code !== 200;
+};
 
-  const res = await apiClient.get(`/employee/validate-refs?${params.toString()}`);
-  if (res.data.code === 200) return '';
+/**
+ * Check certification có tồn tại không.
+ * @returns true = KHÔNG tồn tại (có lỗi ER004)
+ */
+export const checkCertificationNotExists = async (certificationId: string): Promise<boolean> => {
+  const res = await apiClient.get(`/employee/validate-refs?certificationId=${certificationId}`);
+  return res.data.code !== 200;
+};
 
-  const { code, params: msgParams } = res.data.message;
-  return formatMessage(code, msgParams);
+/**
+ * Convert EmployeeFormData sang CreateEmployeePayload.
+ */
+export function toCreateEmployeePayload(
+  data: EmployeeFormData
+): CreateEmployeePayload {
+  const certifications = data.certificationId
+    ? [
+      {
+        certificationId: Number(data.certificationId),
+        startDate: data.certificationStartDate,
+        endDate: data.certificationEndDate,
+        score: data.score,
+      },
+    ]
+    : [];
+
+  return {
+    employeeLoginId: data.loginId,
+    employeeLoginPassword: data.loginPassword,
+    departmentId: Number(data.departmentId),
+    employeeName: data.employeeName,
+    employeeNameKana: data.employeeNameKana,
+    employeeBirthDate: data.birthDate,
+    employeeEmail: data.employeeEmail,
+    employeeTelephone: data.employeeTelephone,
+    certifications,
+  };
 }
+
+/**
+ * Gọi POST /employee để thêm mới nhân viên.
+ * Trả về object { ok, message } để UI xử lý.
+ * Nếu BE trả 400/500 kèm message → format ra tiếng Nhật.
+ */
+export const createEmployee = async (
+  data: EmployeeFormData
+): Promise<CreateEmployeeResult> => {
+  const payload = toCreateEmployeePayload(data);
+  const res = await apiClient.post('/employee', payload);
+
+  const { code, employeeId, message } = res.data;
+  const formatted = message
+    ? formatMessage(message.code, message.params)
+    : '';
+
+  return {
+    ok: code === 200,
+    message: formatted,
+    employeeId,
+  };
+};

@@ -15,8 +15,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { flushSync } from 'react-dom';
+import { useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { useDepartments } from './useDepartments';
@@ -29,7 +28,7 @@ import {
   SESSION_KEY_EMPLOYEE_DATA,
   SESSION_KEY_MODE,
 } from '@/types/adm004';
-import { checkLoginIdDuplicate, checkReferences } from '@/services/employeeService';
+import { checkLoginIdDuplicate, checkCertificationNotExists, checkDepartmentNotExists } from '@/services/employeeService';
 import { formatMessage } from '@/lib/constants/messages';
 
 /** Giá trị mặc định cho toàn bộ form (tất cả rỗng) */
@@ -66,6 +65,7 @@ export function useADM004() {
     handleSubmit,
     setValue,
     watch,
+    setError,
     formState: { errors },
     reset,
   } = useForm<EmployeeFormData>({
@@ -74,9 +74,8 @@ export function useADM004() {
     mode: 'onBlur', // Validate ngay khi người dùng bấm vào trường
     shouldFocusError: true
   });
-  const [formError, setFormError] = useState('');
-  const errorRef = useRef<HTMLLIElement>(null); 
-  const { departments, departmentError } = useDepartments(); // useDepartments từ 
+
+  const { departments, departmentError } = useDepartments(); // useDepartments từ
   const { certifications, certificationError } = useCertifications(); // danh sách chứng chỉ JP
   const selectedCertId = watch('certificationId'); // watch('certificationId') re-render component mỗi khi giá trị thay đổi
   const isCertSelected = selectedCertId !== ''; // isCertSelected = true khi người dùng đã chọn chứng chỉ (khác chuỗi rỗng)
@@ -90,7 +89,7 @@ export function useADM004() {
       } catch {
         // Bỏ qua nếu dữ liệu trong sessionStorage không hợp lệ (JSON parse lỗi)
       }
-    } else if (mode === 'edit'){
+    } else if (mode === 'edit') {
       // Xử lí sau.
     }
     sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
@@ -104,9 +103,9 @@ export function useADM004() {
       // Khi bỏ chọn chứng chỉ (value về '') → xóa 3 field phụ để tránh gửi data thừa lên ADM005
       const value = e.target.value;
       if (!value) {
-        setValue('certificationStartDate', '', {shouldValidate: true});
-        setValue('certificationEndDate', '', {shouldValidate: true});
-        setValue('score', '', {shouldValidate: true});
+        setValue('certificationStartDate', '', { shouldValidate: true });
+        setValue('certificationEndDate', '', { shouldValidate: true });
+        setValue('score', '', { shouldValidate: true });
       }
     },
     [setValue]
@@ -117,20 +116,42 @@ export function useADM004() {
   // handleSubmit chạy validation trước; nếu pass mới gọi callback
   //check trùng và check tồn tại từ api.
   const handleConfirm = handleSubmit(async (data: EmployeeFormData) => {
-    setFormError('');
-    const [refsError, isDoublicate] = await Promise.all([
-      checkReferences(data.departmentId, data.certificationId),
+    const [isDuplicate, deptNotExists, certNotExists] = await Promise.all([
       mode === 'add' ? checkLoginIdDuplicate(data.loginId) : Promise.resolve(false),
-    ])
+      checkDepartmentNotExists(data.departmentId),
+      data.certificationId ? checkCertificationNotExists(data.certificationId) : Promise.resolve(false)
+    ]);
 
-    const errorMsg = refsError || (isDoublicate ? formatMessage('ER003', ['アカウント名']) : '');
+    let hasError = false;
 
-    if (errorMsg) {
-      flushSync(() => setFormError(errorMsg));
-      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (isDuplicate) {
+      setError('loginId', {
+        type: 'server',
+        message: formatMessage('ER003', ['アカウント名']),
+      });
+      hasError = true;
+    }
+
+    if (deptNotExists) {
+      setError('departmentId', {
+        type: 'server',
+        message: formatMessage('ER004', ['グループ']),
+      });
+      hasError = true;
+    }
+
+    if (certNotExists) {
+      setError('certificationId', {
+        type: 'server',
+        message: formatMessage('ER004', ['資格']),
+      });
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
-    
+
     // Lưu dữ liệu đã validate vào sessionStorage để ADM005 đọc
     sessionStorage.setItem(SESSION_KEY_EMPLOYEE_DATA, JSON.stringify(data));
     router.push('/employees/confirm');
@@ -146,7 +167,7 @@ export function useADM004() {
     sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
   };
 
-  
+
   return {
     // Mode hiện tại
     mode,
@@ -154,9 +175,6 @@ export function useADM004() {
     register,
     control,
     errors,
-    //loi gui tu API
-    formError,
-    errorRef,
     // Dữ liệu dropdown
     departments,
     departmentError,

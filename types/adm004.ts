@@ -1,5 +1,5 @@
 /**
- * Type definitions cho màn hình Thêm/Sửa nhân viên (ADM004).
+ * Type definitions cho màn hình Thêm nhân viên.
  */
 
 /**
@@ -47,3 +47,9 @@ export const SESSION_KEY_MODE = 'employeeMode';
 
 /** Key lưu ID nhân viên đang xem/sửa trong sessionStorage (ADM002 → ADM003 → ADM004) */
 export const SESSION_KEY_EMPLOYEE_ID = 'employeeId';
+
+/** Key lưu message hoàn thành (MSG001/002/003) để màn hình complete đọc hiển thị */
+export const SESSION_KEY_COMPLETE_MESSAGE = 'completeMessage';
+
+/** Key lưu message lỗi system để màn /system-error đọc hiển thị */
+export const SESSION_KEY_ERROR_MESSAGE = 'systemErrorMessage';

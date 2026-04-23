@@ -49,7 +49,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         <div className="col-sm col-sm-10">
           <input
             type="text"
-            className= {`form-control${errors.loginId ? ' is-invalid' : ''}`} // class is-invalid nếu có lỗi để highlight
+            className={`form-control${errors.loginId ? ' is-invalid' : ''}`} // class is-invalid nếu có lỗi để highlight
             {...register('loginId')}
           />
           {/* Hiển thị lỗi validation của từng field ngay bên dưới input */}
@@ -140,6 +140,9 @@ export default function EmployeeInfoFields({ register, control, errors, departme
                     field.onChange(date ? format(date, 'yyyy/MM/dd') : '')
                   }
                   onBlur={field.onBlur}
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
                   dateFormat="yyyy/MM/dd"
                 />
               )}
