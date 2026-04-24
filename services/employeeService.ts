@@ -11,7 +11,12 @@ import { EmployeeListApiResponse } from '@/types/employee';
 import { SortField, SortOrder } from '@/lib/constants/employee';
 import { formatMessage } from '@/lib/constants/messages';
 import { EmployeeFormData } from '@/types/adm004';
-import { CreateEmployeePayload, CreateEmployeeResult } from '@/types/employee';
+import {
+  CreateEmployeePayload,
+  CreateEmployeeResult,
+  EmployeeDetailApiResponse,
+  GetEmployeeDetailResult,
+} from '@/types/employee';
 
 
 
@@ -142,4 +147,44 @@ export const createEmployee = async (
     message: formatted,
     employeeId,
   };
+};
+
+/**
+ * Goi GET /employee/{id} de lay chi tiet 1 nhan vien (ADM003).
+ *
+ * Truong hop loi:
+ *   - ER013 (khong ton tai) -> axios catch 400, format message hien thi.
+ *   - ER015 / 500           -> format message he thong.
+ *
+ * @param employeeId ID nhan vien
+ * @returns Promise<GetEmployeeDetailResult> { ok, employee?, message }
+ */
+export const getEmployeeDetail = async (
+  employeeId: number
+): Promise<GetEmployeeDetailResult> => {
+  try {
+    const res = await apiClient.get<EmployeeDetailApiResponse>(
+      `/employee/${employeeId}`
+    );
+    const { code, employee, message } = res.data;
+    if (code === 200 && employee) {
+      return { ok: true, employee, message: '' };
+    }
+    const formatted = message
+      ? formatMessage(message.code ?? 'ER015', message.params)
+      : formatMessage('ER015');
+    return { ok: false, message: formatted };
+  } catch (err: unknown) {
+    const axiosErr = err as {
+      response?: { data?: EmployeeDetailApiResponse };
+    };
+    const data = axiosErr.response?.data;
+    if (data?.message?.code) {
+      return {
+        ok: false,
+        message: formatMessage(data.message.code, data.message.params),
+      };
+    }
+    return { ok: false, message: formatMessage('ER015') };
+  }
 };

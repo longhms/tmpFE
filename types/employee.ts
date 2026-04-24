@@ -48,3 +48,44 @@ export interface CreateEmployeeResult {
   message: string;
   employeeId?: number;
 }
+
+/** 1 dòng chứng chỉ trong response chi tiết nhân viên (ADM003). */
+export interface CertificationDetail {
+  certificationId: number;
+  certificationLevel: number | null;
+  certificationName: string;
+  startDate: string;
+  endDate: string;
+  score: number;
+}
+
+/** Chi tiết 1 nhân viên — khớp EmployeeDetailDTO của BE. */
+export interface EmployeeDetail {
+  employeeId: number;
+  employeeLoginId: string;
+  employeeName: string;
+  employeeNameKana: string;
+  employeeBirthDate: string;
+  employeeEmail: string;
+  employeeTelephone: string;
+  departmentId: number | null;
+  departmentName: string | null;
+  certifications: CertificationDetail[];
+}
+
+/** Response GET /employee/{id} — thành công code=200. */
+export interface EmployeeDetailApiResponse {
+  code: number;
+  employee?: EmployeeDetail;
+  message?: {
+    code?: string;
+    params?: string[];
+  };
+}
+
+/** Kết quả trả về cho UI sau khi gọi getEmployeeDetail. */
+export interface GetEmployeeDetailResult {
+  ok: boolean;
+  employee?: EmployeeDetail;
+  message: string;
+}
