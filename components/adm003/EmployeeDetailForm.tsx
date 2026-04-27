@@ -16,16 +16,25 @@
 
 import { Fragment } from 'react';
 import { EmployeeDetail } from '@/types/employee';
+import { formatMessage } from '@/lib/constants/messages';
 
 type Props = {
   /** Du lieu chi tiet nhan vien — null khi dang load hoac chua co */
   employee: EmployeeDetail | null;
   /** Handler nut 編集 */
   onEdit: () => void;
-  /** Handler nut 削除 */
+  /** Handler nut 削除 — mo dialog xac nhan */
   onDelete: () => void;
   /** Handler nut 戻る */
   onBack: () => void;
+  /** Hien thi dialog xac nhan xoa */
+  showConfirm: boolean;
+  /** Thong bao loi xoa inline (ER020) */
+  deleteError: string;
+  /** Xac nhan xoa trong dialog */
+  onConfirmDelete: () => void;
+  /** Huy xoa, dong dialog */
+  onCancelDelete: () => void;
 };
 
 export default function EmployeeDetailForm({
@@ -33,6 +42,10 @@ export default function EmployeeDetailForm({
   onEdit,
   onDelete,
   onBack,
+  showConfirm,
+  deleteError,
+  onConfirmDelete,
+  onCancelDelete,
 }: Props) {
   // Chua co du lieu -> khong render de tranh hien thi rong
   if (!employee) return null;
@@ -40,6 +53,29 @@ export default function EmployeeDetailForm({
   const certs = employee.certifications ?? [];
 
   return (
+    <>
+    {/* Dialog xac nhan xoa (MSG004) */}
+    {showConfirm && (
+      <div style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 1000,
+      }}>
+        <div className="box-shadow" style={{ background: '#fff', padding: '32px 40px', textAlign: 'center', borderRadius: 4 }}>
+          <p style={{ marginBottom: 24 }}>{formatMessage('MSG004')}</p>
+          <div className="btn-group">
+            <button type="button" className="btn btn-primary btn-sm" onClick={onConfirmDelete}>
+              OK
+            </button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onCancelDelete}>
+              キャンセル
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     <div className="row">
       <form className="c-form box-shadow">
         <ul className="show-data">
@@ -116,6 +152,13 @@ export default function EmployeeDetailForm({
             ))
           )}
 
+          {/* Loi xoa inline (ER020: khong the xoa admin) */}
+          {deleteError && (
+            <li className="form-group row d-flex">
+              <div className="col-sm col-sm-10 ml text-danger">{deleteError}</div>
+            </li>
+          )}
+
           {/* ── Nhom button ── */}
           <li className="form-group row d-flex">
             <div className="btn-group col-sm col-sm-10 ml">
@@ -145,5 +188,6 @@ export default function EmployeeDetailForm({
         </ul>
       </form>
     </div>
+    </>
   );
 }

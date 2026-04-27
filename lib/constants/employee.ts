@@ -25,3 +25,6 @@ export const DEFAULT_SORT_DIRECTIONS: Record<SortField, SortOrder> = {
 /** Ky hieu sort indicator hien thi tren header cua bang */
 export const SORT_INDICATOR_ASC = '▲▽';   // ASC
 export const SORT_INDICATOR_DESC = '△▼';  // DESC
+
+export const DATE_FORMAT = 'yyyy/MM/dd';
+export const EMPTY_STRING = '';

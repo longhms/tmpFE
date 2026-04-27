@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, formatMessage } from '@/lib/constants/messages';
 import { FIELD, REGEX, MAX_LENGTH } from '@/lib/constants/validation';
+import { DATE_FORMAT, EMPTY_STRING } from '@/lib/constants/employee';
 //Check ngay hop le
-const dateString = z.string().refine((date) => date === '' || REGEX.DATE_YYYY_MM_DD.test(date), {
-    message: formatMessage(ERROR_MESSAGES.ER011, [FIELD.BIRTH_DATE, 'yyyy/MM/dd']),
+const dateString = z.string().refine((date) => date === EMPTY_STRING || REGEX.DATE_YYYY_MM_DD.test(date), {
+    message: formatMessage(ERROR_MESSAGES.ER011, [FIELD.BIRTH_DATE, DATE_FORMAT]),
 });
 
 //check validate cơ bản
@@ -76,17 +77,17 @@ export const employeeSchema = z.object({
     })
 
     //check bắt buộc 3 trường nếu đã chọn certification
-    .refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.certificationStartDate !== '', {
+    .refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.certificationStartDate !== EMPTY_STRING, {
         message: formatMessage(ERROR_MESSAGES.ER001, [FIELD.CERTIFICATION_START]),
         path: ['certificationStartDate'],
     })
 
-    .refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.certificationEndDate !== '', {
+    .refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.certificationEndDate !== EMPTY_STRING, {
         message: formatMessage(ERROR_MESSAGES.ER001, [FIELD.CERTIFICATION_END]),
         path: ['certificationEndDate'],
     })
 
-    .refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.score !== '', {
+    .refine((checkRequiredWhenSelected) => !checkRequiredWhenSelected.certificationId || checkRequiredWhenSelected.score !== EMPTY_STRING, {
         message: formatMessage(ERROR_MESSAGES.ER001, [FIELD.SCORE]),
         path: ['score'],
     })

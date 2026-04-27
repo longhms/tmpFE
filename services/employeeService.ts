@@ -149,6 +149,46 @@ export const createEmployee = async (
   };
 };
 
+/** Kết quả trả về cho UI sau khi gọi deleteEmployee. */
+export interface DeleteEmployeeResult {
+  ok: boolean;
+  message: string;
+  errorCode?: string;
+}
+
+/**
+ * Goi DELETE /employee/{id} de xoa nhan vien (ADM003).
+ *
+ * Truong hop loi:
+ *   - ER014 (khong ton tai khi xoa) -> 400, hien thi o system-error.
+ *   - ER020 (xoa admin)             -> 400, hien thi inline tren ADM003.
+ *   - ER015 / 500                   -> redirect system-error.
+ *
+ * @param employeeId ID nhan vien can xoa
+ * @returns Promise<DeleteEmployeeResult> { ok, message, errorCode? }
+ */
+export const deleteEmployee = async (
+  employeeId: number
+): Promise<DeleteEmployeeResult> => {
+  try {
+    const res = await apiClient.delete(`/employee/${employeeId}`);
+    return { ok: res.data.code === 200, message: '' };
+  } catch (err: unknown) {
+    const axiosErr = err as {
+      response?: { data?: { message?: { code?: string; params?: string[] } } };
+    };
+    const data = axiosErr.response?.data;
+    if (data?.message?.code) {
+      return {
+        ok: false,
+        message: formatMessage(data.message.code, data.message.params),
+        errorCode: data.message.code,
+      };
+    }
+    return { ok: false, message: formatMessage('ER015'), errorCode: 'ER015' };
+  }
+};
+
 /**
  * Goi GET /employee/{id} de lay chi tiet 1 nhan vien (ADM003).
  *

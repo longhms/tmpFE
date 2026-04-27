@@ -16,7 +16,12 @@ import EmployeeDetailForm from '@/components/adm003/EmployeeDetailForm';
 export default function EmployeeDetailPage() {
   useAuth();
 
-  const { employee, loading, handleEdit, handleDelete, handleBack } = useADM003();
+  const {
+    employee, loading,
+    handleEdit, handleDelete, handleBack,
+    showConfirm, deleteError,
+    handleConfirmDelete, handleCancelDelete,
+  } = useADM003();
 
   // Dang tai du lieu -> khong render de tranh flash
   if (loading) return null;
@@ -27,6 +32,10 @@ export default function EmployeeDetailPage() {
       onEdit={handleEdit}
       onDelete={handleDelete}
       onBack={handleBack}
+      showConfirm={showConfirm}
+      deleteError={deleteError}
+      onConfirmDelete={handleConfirmDelete}
+      onCancelDelete={handleCancelDelete}
     />
   );
 }

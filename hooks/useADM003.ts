@@ -18,9 +18,10 @@ import { useRouter } from 'next/navigation';
 import {
   SESSION_KEY_EMPLOYEE_ID,
   SESSION_KEY_ERROR_MESSAGE,
+  SESSION_KEY_COMPLETE_MESSAGE,
 } from '@/types/adm004';
 import { EmployeeDetail } from '@/types/employee';
-import { getEmployeeDetail } from '@/services/employeeService';
+import { getEmployeeDetail, deleteEmployee } from '@/services/employeeService';
 import { formatMessage } from '@/lib/constants/messages';
 
 export function useADM003() {
@@ -28,6 +29,8 @@ export function useADM003() {
 
   const [employee, setEmployee] = useState<EmployeeDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   // Dung ref de chan double-fetch trong StrictMode / remount
   const fetchedRef = useRef(false);
@@ -82,12 +85,45 @@ export function useADM003() {
     router.push('/employees/edit');
   }, [router, employee]);
 
-  /**
-   * Click 削除 -> placeholder, chuc nang xoa se lam o task sau.
-   */
+  /** Click 削除 -> mo dialog xac nhan (MSG004). */
   const handleDelete = useCallback(() => {
-    // TODO: wire modal xac nhan xoa (MSG004) + DELETE /employee/{id}
+    setDeleteError('');
+    setShowConfirm(true);
   }, []);
+
+  /** Click Cancel trong dialog -> dong dialog. */
+  const handleCancelDelete = useCallback(() => {
+    setShowConfirm(false);
+  }, []);
+
+  /**
+   * Click OK trong dialog -> goi DELETE /employee/{id}.
+   *   Thanh cong  -> luu MSG003 -> redirect /employees/complete.
+   *   ER020       -> hien loi inline, o lai trang.
+   *   Loi khac    -> redirect /employees/system-error.
+   */
+  const handleConfirmDelete = useCallback(async () => {
+    if (!employee) return;
+    setShowConfirm(false);
+
+    const result = await deleteEmployee(employee.employeeId);
+
+    if (result.ok) {
+      sessionStorage.setItem(SESSION_KEY_COMPLETE_MESSAGE, formatMessage('MSG003'));
+      router.push('/employees/complete');
+      return;
+    }
+
+    if (result.errorCode === 'ER020') {
+      setDeleteError(result.message);
+    } else {
+      sessionStorage.setItem(
+        SESSION_KEY_ERROR_MESSAGE,
+        result.message || formatMessage('ER015')
+      );
+      router.replace('/employees/system-error');
+    }
+  }, [employee, router]);
 
   /**
    * Click 戻る -> quay lai ADM002.
@@ -103,5 +139,9 @@ export function useADM003() {
     handleEdit,
     handleDelete,
     handleBack,
+    showConfirm,
+    deleteError,
+    handleConfirmDelete,
+    handleCancelDelete,
   };
 }
