@@ -123,11 +123,25 @@ export default function EmployeeDetailForm({
           </li>
 
           {certs.length === 0 ? (
-            // Khong co chung chi -> chi hien label 資格 rong
-            <li className="form-group row d-flex">
-              <label className="col-form-label col-sm-2">資格</label>
-              <div className="col-sm col-sm-10"></div>
-            </li>
+            // Không có chứng chỉ -> vẫn hiển thị đầy đủ 4 trường, để giá trị trống.
+            <Fragment>
+              <li className="form-group row d-flex">
+                <label className="col-form-label col-sm-2">資格</label>
+                <div className="col-sm col-sm-10"></div>
+              </li>
+              <li className="form-group row d-flex">
+                <label className="col-form-label col-sm-2">資格交付日</label>
+                <div className="col-sm col-sm-10"></div>
+              </li>
+              <li className="form-group row d-flex">
+                <label className="col-form-label col-sm-2">失効日</label>
+                <div className="col-sm col-sm-10"></div>
+              </li>
+              <li className="form-group row d-flex">
+                <label className="col-form-label col-sm-2">点数</label>
+                <div className="col-sm col-sm-10"></div>
+              </li>
+            </Fragment>
           ) : (
             certs.map((c, idx) => (
               // React.Fragment voi key — tranh <div> khong hop le trong <ul>

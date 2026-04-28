@@ -1,38 +1,43 @@
-/**
+/*
  * Copyright(C) [2026] [Luvina Software Company]
  * [useADM003.ts], [Apr, 2026] [ntlong]
- *
- * Custom hook quan ly logic man hinh Chi tiet nhan vien (ADM003).
- *
- *   - Doc employeeId tu sessionStorage (da set boi ADM002 khi click vao ID).
- *   - Khong co ID -> redirect ve ADM002.
- *   - Goi GET /employee/{id} de lay du lieu.
- *   - Loi (ER013/ER015,...) -> luu message va redirect ve /employees/system-error.
- *   - handleEdit/handleDelete/handleBack: se wire tiep o cac task sau.
  */
 
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
-  SESSION_KEY_EMPLOYEE_ID,
   SESSION_KEY_ERROR_MESSAGE,
   SESSION_KEY_COMPLETE_MESSAGE,
-} from '@/types/adm004';
+} from '@/types/employee';
 import { EmployeeDetail } from '@/types/employee';
 import { getEmployeeDetail, deleteEmployee } from '@/services/employeeService';
 import { formatMessage } from '@/lib/constants/messages';
 
+/**
+ * Custom hook quản lý logic màn hình Chi tiết nhân viên (ADM003).
+ *
+ *   - Đọc employeeId từ URL params (route: /employees/detail/[employeeId]).
+ *   - Không hợp lệ -> redirect về /employees/list.
+ *   - Gọi GET /employee/{id} để lấy dữ liệu chi tiết.
+ *   - Lỗi (ER013/ER015,...) -> lưu message và redirect về /employees/system-error.
+ *   - handleEdit -> ADM004 ở chế độ edit (sẽ wire URL khi làm edit).
+ *   - handleDelete -> mở dialog xác nhận; OK gọi DELETE; ER020 hiển thị inline.
+ *   - handleBack -> router.back() giữ nguyên search/sort/page của ADM002.
+ *
+ * @author [ntlong]
+ */
 export function useADM003() {
   const router = useRouter();
+  const params = useParams();
 
   const [employee, setEmployee] = useState<EmployeeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
-  // Dung ref de chan double-fetch trong StrictMode / remount
+  // Dùng ref để chặn double-fetch trong StrictMode / remount.
   const fetchedRef = useRef(false);
 
   useEffect(() => {
@@ -41,16 +46,17 @@ export function useADM003() {
 
     if (typeof window === 'undefined') return;
 
-    // ── Doc employeeId tu sessionStorage ──
-    const idStr = sessionStorage.getItem(SESSION_KEY_EMPLOYEE_ID);
+    // ── Lấy employeeId từ URL params ──
+    const raw = params?.employeeId;
+    const idStr = Array.isArray(raw) ? raw[0] : raw;
     const id = idStr ? Number(idStr) : NaN;
     if (!idStr || !Number.isFinite(id) || id <= 0) {
-      // Truy cap truc tiep URL /employees/detail -> khong co ID -> ve list
+      // URL không hợp lệ -> trả về list.
       router.replace('/employees/list');
       return;
     }
 
-    // ── Goi API lay chi tiet ──
+    // ── Gọi API lấy chi tiết ──
     (async () => {
       try {
         const result = await getEmployeeDetail(id);
@@ -73,34 +79,36 @@ export function useADM003() {
         setLoading(false);
       }
     })();
-  }, [router]);
+  }, [router, params]);
 
   /**
-   * Click 編集 -> chuyen ADM004 ở edit mode.
-   * Chức năng edit đầy đủ sẽ được nối ở task edit sau; hiện tại chỉ điều hướng.
+   * Click 編集 -> chuyển sang ADM004 ở chế độ edit, đẩy id lên URL.
    */
   const handleEdit = useCallback(() => {
     if (!employee) return;
-    sessionStorage.setItem(SESSION_KEY_EMPLOYEE_ID, String(employee.employeeId));
-    router.push('/employees/edit');
+    router.push(`/employees/edit/${employee.employeeId}`);
   }, [router, employee]);
 
-  /** Click 削除 -> mo dialog xac nhan (MSG004). */
+  /**
+   * Click 削除 -> mở dialog xác nhận (MSG004).
+   */
   const handleDelete = useCallback(() => {
     setDeleteError('');
     setShowConfirm(true);
   }, []);
 
-  /** Click Cancel trong dialog -> dong dialog. */
+  /**
+   * Click Cancel trong dialog -> đóng dialog.
+   */
   const handleCancelDelete = useCallback(() => {
     setShowConfirm(false);
   }, []);
 
   /**
-   * Click OK trong dialog -> goi DELETE /employee/{id}.
-   *   Thanh cong  -> luu MSG003 -> redirect /employees/complete.
-   *   ER020       -> hien loi inline, o lai trang.
-   *   Loi khac    -> redirect /employees/system-error.
+   * Click OK trong dialog -> gọi DELETE /employee/{id}.
+   *   - Thành công -> lưu MSG003 và redirect /employees/complete.
+   *   - ER020      -> hiển thị lỗi inline, ở lại trang.
+   *   - Lỗi khác   -> redirect /employees/system-error.
    */
   const handleConfirmDelete = useCallback(async () => {
     if (!employee) return;
@@ -126,8 +134,8 @@ export function useADM003() {
   }, [employee, router]);
 
   /**
-   * Click 戻る -> quay lai ADM002.
-   * router.back() dam bao giu nguyen search/sort/page cua ADM002.
+   * Click 戻る -> quay lại ADM002.
+   * router.back() đảm bảo giữ nguyên search/sort/page của ADM002.
    */
   const handleBack = useCallback(() => {
     router.back();

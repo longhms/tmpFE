@@ -1,56 +1,58 @@
-/**
+/*
  * Copyright(C) [2026] [Luvina Software Company]
  * [employeeService.ts], [Apr, 2026] [ntlong]
- *
- * Service goi API lien quan den chuc nang Employee.
- * Xu ly viec build query params va goi API GET /employee.
  */
 
 import { apiClient } from '@/lib/api/client';
-import { EmployeeListApiResponse } from '@/types/employee';
-import { SortField, SortOrder } from '@/lib/constants/employee';
-import { formatMessage } from '@/lib/constants/messages';
-import { EmployeeFormData } from '@/types/adm004';
 import {
   CreateEmployeePayload,
   CreateEmployeeResult,
+  DeleteEmployeeResult,
   EmployeeDetailApiResponse,
+  EmployeeFormData,
+  EmployeeListApiResponse,
   GetEmployeeDetailResult,
 } from '@/types/employee';
-
-
+import { SortField, SortOrder } from '@/lib/constants/employee';
+import { formatMessage } from '@/lib/constants/messages';
 
 /**
- * Interface dinh nghia cac tham so truyen vao API lay danh sach nhan vien.
- * Tuong ung voi cac query params cua API: GET /employee
+ * Service gọi API liên quan đến chức năng Employee.
+ * Build query params, format payload, parse response và format message lỗi.
+ *
+ * @author [ntlong]
+ */
+
+/**
+ * Tham số truyền vào API lấy danh sách nhân viên.
+ * Tương ứng query params của GET /employee.
  */
 export interface FetchEmployeeListParams {
-  employeeName: string;    // Tim kiem theo ten (LIKE %name%)
-  departmentId: string;    // Loc theo phong ban (exact match)
-  sortDirections: Record<SortField, SortOrder>;  // Thu tu sap xep cua 3 truong
-  offset: number;          // Vi tri bat dau lay du lieu
-  limit: number;           // So ban ghi toi da moi trang
+  /** Tìm kiếm theo tên (LIKE %name%) */
+  employeeName: string;
+  /** Lọc theo phòng ban (exact match) */
+  departmentId: string;
+  /** Thứ tự sắp xếp của 3 trường */
+  sortDirections: Record<SortField, SortOrder>;
+  /** Vị trí bắt đầu lấy dữ liệu */
+  offset: number;
+  /** Số bản ghi tối đa mỗi trang */
+  limit: number;
 }
 
 /**
- * Goi API GET /employee de lay danh sach nhan vien.
+ * Gọi API GET /employee để lấy danh sách nhân viên.
+ * Thứ tự ưu tiên sort cố định: employeeName -> certificationName -> endDate.
  *
- * URL default: /employee?employee_name=&department_id=
- *          &ord_employee_name=ASC&ord_certification_name=ASC
- *          &ord_end_date=DESC&offset=0&limit=20
- *
- * Thu tu uu tien sort co dinh: employeeName -> certificationName -> endDate
- *
- * @param params Cac tham so tim kiem, sap xep, phan trang
- * @returns Promise<EmployeeListApiResponse> Ket qua tra ve tu API
+ * @param params Các tham số tìm kiếm, sắp xếp, phân trang
+ * @returns Promise<EmployeeListApiResponse> kết quả trả về từ API
  */
 export const fetchEmployeeList = async (
   params: FetchEmployeeListParams
 ): Promise<EmployeeListApiResponse> => {
-  // Build query params tu object params
   const searchParams = new URLSearchParams();
 
-  // Luon truyen du tat ca params theo dung format API yeu cau
+  // Luôn truyền đủ tất cả params theo đúng format API yêu cầu.
   searchParams.set('employee_name', params.employeeName.trim());
   searchParams.set('department_id', params.departmentId);
   searchParams.set('ord_employee_name', params.sortDirections.employeeName);
@@ -62,55 +64,60 @@ export const fetchEmployeeList = async (
   const response = await apiClient.get<EmployeeListApiResponse>(
     `/employee?${searchParams.toString()}`
   );
-
   return response.data;
 };
 
-
 /**
- * Get API check trùng loginId
- * 
- * @param loginId loginId muốn check trùng
- * @returns true = đã trùng loginId
+ * Gọi GET /employee/check-employee-login-id để check trùng loginId.
+ *
+ * @param loginId loginId muốn check
+ * @returns true nếu đã tồn tại (trùng)
  */
 export const checkLoginIdDuplicate = async (loginId: string): Promise<boolean> => {
   const res = await apiClient.get(`/employee/check-employee-login-id?loginId=${loginId}`);
   return res.data.code !== 200;
-}
+};
 
 /**
  * Check department có tồn tại không.
- * @returns true = KHÔNG tồn tại (có lỗi ER004)
+ *
+ * @param departmentId ID phòng ban
+ * @returns true nếu KHÔNG tồn tại (lỗi ER004)
  */
 export const checkDepartmentNotExists = async (departmentId: string): Promise<boolean> => {
-  const res = await apiClient.get(`/employee/validate-refs?departmentId=${departmentId}`);
+  const res = await apiClient.get(`/employee/check-refs-exist?departmentId=${departmentId}`);
   return res.data.code !== 200;
 };
 
 /**
  * Check certification có tồn tại không.
- * @returns true = KHÔNG tồn tại (có lỗi ER004)
+ *
+ * @param certificationId ID chứng chỉ
+ * @returns true nếu KHÔNG tồn tại (lỗi ER004)
  */
 export const checkCertificationNotExists = async (certificationId: string): Promise<boolean> => {
-  const res = await apiClient.get(`/employee/validate-refs?certificationId=${certificationId}`);
+  const res = await apiClient.get(`/employee/check-refs-exist?certificationId=${certificationId}`);
   return res.data.code !== 200;
 };
 
 /**
- * Convert EmployeeFormData sang CreateEmployeePayload.
+ * Convert EmployeeFormData (dữ liệu form) sang CreateEmployeePayload (payload BE).
+ *
+ * @param data Dữ liệu form đã validate
+ * @returns Payload sẵn sàng gửi POST /employee
  */
 export function toCreateEmployeePayload(
   data: EmployeeFormData
 ): CreateEmployeePayload {
   const certifications = data.certificationId
     ? [
-      {
-        certificationId: Number(data.certificationId),
-        startDate: data.certificationStartDate,
-        endDate: data.certificationEndDate,
-        score: data.score,
-      },
-    ]
+        {
+          certificationId: Number(data.certificationId),
+          startDate: data.certificationStartDate,
+          endDate: data.certificationEndDate,
+          score: data.score,
+        },
+      ]
     : [];
 
   return {
@@ -129,7 +136,10 @@ export function toCreateEmployeePayload(
 /**
  * Gọi POST /employee để thêm mới nhân viên.
  * Trả về object { ok, message } để UI xử lý.
- * Nếu BE trả 400/500 kèm message → format ra tiếng Nhật.
+ * Nếu BE trả 400/500 kèm message thì format ra tiếng Nhật.
+ *
+ * @param data Dữ liệu form đã validate
+ * @returns Promise<CreateEmployeeResult> kết quả cho UI
  */
 export const createEmployee = async (
   data: EmployeeFormData
@@ -149,22 +159,15 @@ export const createEmployee = async (
   };
 };
 
-/** Kết quả trả về cho UI sau khi gọi deleteEmployee. */
-export interface DeleteEmployeeResult {
-  ok: boolean;
-  message: string;
-  errorCode?: string;
-}
-
 /**
- * Goi DELETE /employee/{id} de xoa nhan vien (ADM003).
+ * Gọi DELETE /employee/{id} để xóa nhân viên (ADM003).
  *
- * Truong hop loi:
- *   - ER014 (khong ton tai khi xoa) -> 400, hien thi o system-error.
- *   - ER020 (xoa admin)             -> 400, hien thi inline tren ADM003.
- *   - ER015 / 500                   -> redirect system-error.
+ * Trường hợp lỗi:
+ *   - ER014 (không tồn tại khi xóa) -> 400, hiển thị ở /employees/system-error.
+ *   - ER020 (xóa admin)             -> 400, hiển thị inline trên ADM003.
+ *   - ER015 / 500                   -> redirect /employees/system-error.
  *
- * @param employeeId ID nhan vien can xoa
+ * @param employeeId ID nhân viên cần xóa
  * @returns Promise<DeleteEmployeeResult> { ok, message, errorCode? }
  */
 export const deleteEmployee = async (
@@ -190,13 +193,13 @@ export const deleteEmployee = async (
 };
 
 /**
- * Goi GET /employee/{id} de lay chi tiet 1 nhan vien (ADM003).
+ * Gọi GET /employee/{id} để lấy chi tiết 1 nhân viên (ADM003).
  *
- * Truong hop loi:
- *   - ER013 (khong ton tai) -> axios catch 400, format message hien thi.
- *   - ER015 / 500           -> format message he thong.
+ * Trường hợp lỗi:
+ *   - ER013 (không tồn tại) -> axios catch 400, format message hiển thị.
+ *   - ER015 / 500           -> format message hệ thống.
  *
- * @param employeeId ID nhan vien
+ * @param employeeId ID nhân viên
  * @returns Promise<GetEmployeeDetailResult> { ok, employee?, message }
  */
 export const getEmployeeDetail = async (

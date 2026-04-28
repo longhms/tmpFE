@@ -10,7 +10,7 @@
 'use client';
 
 import { UseFormRegister, Control, FieldErrors } from 'react-hook-form';
-import { EmployeeFormData } from '@/types/adm004';
+import { EmployeeFormData } from '@/types/employee';
 import { Department } from '@/types/department';
 import { Certification } from '@/types/certification';
 import EmployeeInfoFields from './EmployeeInfoFields';

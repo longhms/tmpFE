@@ -16,7 +16,7 @@ import { UseFormRegister, Control, FieldErrors, Controller } from 'react-hook-fo
 import DatePicker from 'react-datepicker';
 import { parse, format } from 'date-fns';
 import 'react-datepicker/dist/react-datepicker.css';
-import { EmployeeFormData } from '@/types/adm004';
+import { EmployeeFormData } from '@/types/employee';
 import { Department } from '@/types/department';
 
 /** Props nhận từ EmployeeInputForm */

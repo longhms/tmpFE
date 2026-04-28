@@ -27,7 +27,7 @@ import {
   FormMode,
   SESSION_KEY_EMPLOYEE_DATA,
   SESSION_KEY_MODE,
-} from '@/types/adm004';
+} from '@/types/employee';
 import { checkLoginIdDuplicate, checkCertificationNotExists, checkDepartmentNotExists } from '@/services/employeeService';
 import { formatMessage } from '@/lib/constants/messages';
 

@@ -9,7 +9,7 @@
 
 'use client';
 
-import { EmployeeFormData } from '@/types/adm004';
+import { EmployeeFormData } from '@/types/employee';
 
 /** Props nhận từ EmployeeConfirmForm */
 type Props = {

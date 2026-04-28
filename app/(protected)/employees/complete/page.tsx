@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { SESSION_KEY_COMPLETE_MESSAGE } from '@/types/adm004';
+import { SESSION_KEY_COMPLETE_MESSAGE } from '@/types/employee';
 import { formatMessage } from '@/lib/constants/messages';
 
 export default function EmployeeCompletePage() {

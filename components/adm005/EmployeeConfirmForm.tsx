@@ -8,7 +8,7 @@
 
 'use client';
 
-import { EmployeeFormData } from '@/types/adm004';
+import { EmployeeFormData } from '@/types/employee';
 import EmployeeInfoDisplay from './EmployeeInfoDisplay';
 import CertificationDisplay from './CertificationDisplay';
 

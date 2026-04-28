@@ -21,7 +21,7 @@ import {
   SORT_INDICATOR_ASC,
   SORT_INDICATOR_DESC,
 } from '@/lib/constants/employee';
-import { SESSION_KEY_MODE, SESSION_KEY_EMPLOYEE_ID, SESSION_KEY_EMPLOYEE_DATA } from '@/types/adm004';
+import { SESSION_KEY_MODE, SESSION_KEY_EMPLOYEE_DATA } from '@/types/employee';
 
 
 /**
@@ -240,14 +240,13 @@ export function useADM002() {
 
   /**
    * Xử lý click ID nhân viên → trang chi tiết (ADM003).
-   * URL ADM002 (có query params) vẫn nằm trong browser history.
-   * Khi user bấm Back từ ADM003, browser khôi phục URL ADM002 → state tự restore.
+   * Đẩy id lên URL: /employees/detail/{employeeId} → trang ADM003 đọc params.
+   * URL ADM002 (có query params) vẫn nằm trong browser history,
+   * khi user bấm Back từ ADM003 thì state tự restore.
    */
   const handleClickDetail = useCallback(
     (employeeId: number) => {
-      // Lưu ID để ADM003 đọc khi load
-      sessionStorage.setItem(SESSION_KEY_EMPLOYEE_ID, String(employeeId));
-      router.push('/employees/detail');
+      router.push(`/employees/detail/${employeeId}`);
     },
     [router]
   );

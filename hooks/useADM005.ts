@@ -22,7 +22,7 @@ import {
   SESSION_KEY_EMPLOYEE_DATA,
   SESSION_KEY_COMPLETE_MESSAGE,
   SESSION_KEY_ERROR_MESSAGE,
-} from '@/types/adm004';
+} from '@/types/employee';
 import { createEmployee } from '@/services/employeeService';
 import { formatMessage } from '@/lib/constants/messages';
 
