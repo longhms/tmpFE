@@ -48,13 +48,13 @@ function toQueryString(
 ): string {
   const params = new URLSearchParams();
 
-  if (name)              params.set('name', name);
-  if (department)        params.set('department', department);
-  if (page > 0)          params.set('page', String(page));
+  if (name) params.set('name', name);
+  if (department) params.set('department', department);
+  if (page > 0) params.set('page', String(page));
   // Sort chỉ ghi khi DESC (ASC là mặc định, không cần lưu vào URL)
-  if (dirs.employeeName       !== 'ASC') params.set('sortName', dirs.employeeName);
-  if (dirs.certificationName  !== 'ASC') params.set('sortCert', dirs.certificationName);
-  if (dirs.endDate            !== 'ASC') params.set('sortEnd',  dirs.endDate);
+  if (dirs.employeeName !== 'ASC') params.set('sortName', dirs.employeeName);
+  if (dirs.certificationName !== 'ASC') params.set('sortCert', dirs.certificationName);
+  if (dirs.endDate !== 'ASC') params.set('sortEnd', dirs.endDate);
 
   const qs = params.toString();
   return qs ? `?${qs}` : '';
@@ -62,8 +62,8 @@ function toQueryString(
 
 
 export function useADM002() {
-  const router      = useRouter();
-  const pathname    = usePathname();   // '/employees/list'
+  const router = useRouter();
+  const pathname = usePathname();   // '/employees/list'
   const searchParams = useSearchParams(); // Đọc query params từ URL hiện tại
 
   // ── Khởi tạo state từ URL query params ──
@@ -76,9 +76,9 @@ export function useADM002() {
     () => searchParams.get('department') ?? ''
   );
   const [sortDirections, setSortDirections] = useState<Record<SortField, SortOrder>>(() => ({
-    employeeName:      parseSortOrder(searchParams.get('sortName')),
+    employeeName: parseSortOrder(searchParams.get('sortName')),
     certificationName: parseSortOrder(searchParams.get('sortCert')),
-    endDate:           parseSortOrder(searchParams.get('sortEnd')),
+    endDate: parseSortOrder(searchParams.get('sortEnd')),
   }));
   const [currentPage, setCurrentPage] = useState<number>(() => {
     // Validate page: phải là số nguyên không âm, ngược lại về 0
@@ -87,25 +87,25 @@ export function useADM002() {
   });
 
   // ── Data state ──
-  const [employees, setEmployees]       = useState<EmployeeListItem[]>([]);
+  const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [isLoading, setIsLoading]       = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   // Tổng số trang tính từ totalRecords và DEFAULT_LIMIT
   const totalPages = Math.ceil(totalRecords / DEFAULT_LIMIT);
 
   // ── Refs: luôn giữ giá trị mới nhất, tránh stale closure trong useCallback ──
-  const employeeNameRef     = useRef(employeeName);
-  const departmentIdRef     = useRef(departmentId);
-  const sortDirectionsRef   = useRef(sortDirections);
-  const currentPageRef      = useRef(currentPage);
+  const employeeNameRef = useRef(employeeName);
+  const departmentIdRef = useRef(departmentId);
+  const sortDirectionsRef = useRef(sortDirections);
+  const currentPageRef = useRef(currentPage);
 
   // Đồng bộ ref mỗi render (chạy trước useEffect → luôn có giá trị mới nhất)
-  employeeNameRef.current   = employeeName;
-  departmentIdRef.current   = departmentId;
+  employeeNameRef.current = employeeName;
+  departmentIdRef.current = departmentId;
   sortDirectionsRef.current = sortDirections;
-  currentPageRef.current    = currentPage;
+  currentPageRef.current = currentPage;
 
   // ──────────────────────────────────────────────────────────────────────────
   // updateURL: cập nhật URL mà KHÔNG tạo history entry mới (router.replace).
@@ -163,11 +163,11 @@ export function useADM002() {
       offset?: number;
       dirs?: Record<SortField, SortOrder>;
     }): FetchEmployeeListParams => ({
-      employeeName:   employeeNameRef.current,
-      departmentId:   departmentIdRef.current,
+      employeeName: employeeNameRef.current,
+      departmentId: departmentIdRef.current,
       sortDirections: overrides?.dirs ?? sortDirectionsRef.current,
-      offset:         overrides?.offset ?? 0,
-      limit:          DEFAULT_LIMIT,
+      offset: overrides?.offset ?? 0,
+      limit: DEFAULT_LIMIT,
     }),
     []
   );
@@ -256,9 +256,6 @@ export function useADM002() {
    * Tương tự handleClickDetail: URL ADM002 vẫn trong history → tự khôi phục khi Back.
    */
   const handleAddEmployee = useCallback(() => {
-    // Đánh dấu mode 'add' để ADM004 biết đây là thêm mới
-    sessionStorage.setItem(SESSION_KEY_MODE, 'add');
-    sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
     router.push('/employees/edit');
   }, [router]);
 
@@ -277,14 +274,14 @@ export function useADM002() {
   const visiblePages: number[] = useMemo(() => {
     if (totalPages <= 1) return [];
     const start = Math.max(0, currentPage - 1);
-    const end   = Math.min(totalPages - 1, currentPage + 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
     const pages: number[] = [];
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   }, [currentPage, totalPages]);
 
-  const firstVisible  = visiblePages[0] ?? 0;
-  const lastVisible   = visiblePages[visiblePages.length - 1] ?? 0;
+  const firstVisible = visiblePages[0] ?? 0;
+  const lastVisible = visiblePages[visiblePages.length - 1] ?? 0;
   const showPagination = totalPages > 1;
 
   return {

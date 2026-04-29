@@ -28,3 +28,6 @@ export const SORT_INDICATOR_DESC = '△▼';  // DESC
 
 export const DATE_FORMAT = 'yyyy/MM/dd';
 export const EMPTY_STRING = '';
+
+export const MODE_EDIT = 'edit';
+export const MODE_ADD = 'add';

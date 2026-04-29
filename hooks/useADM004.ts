@@ -17,19 +17,21 @@
 
 import { useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useDepartments } from './useDepartments';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { employeeSchema } from '@/lib/validation/employee';
+import { addEmployeeSchema, updateEmployeeSchema } from '@/lib/validation/employee';
 import { useCertifications } from './useCertifications';
 import {
   EmployeeFormData,
   FormMode,
   SESSION_KEY_EMPLOYEE_DATA,
+  SESSION_KEY_ERROR_MESSAGE,
   SESSION_KEY_MODE,
 } from '@/types/employee';
-import { checkLoginIdDuplicate, checkCertificationNotExists, checkDepartmentNotExists } from '@/services/employeeService';
+import { checkLoginIdDuplicate, checkCertificationNotExists, checkDepartmentNotExists, getEmployeeDetail } from '@/services/employeeService';
 import { formatMessage } from '@/lib/constants/messages';
+import { MODE_ADD, MODE_EDIT } from '@/lib/constants/employee';
 
 /** Giá trị mặc định cho toàn bộ form (tất cả rỗng) */
 const DEFAULT_FORM_VALUES: EmployeeFormData = {
@@ -50,14 +52,17 @@ const DEFAULT_FORM_VALUES: EmployeeFormData = {
 
 export function useADM004() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Xác định mode: 'add' (từ nút Thêm ở ADM002) hoặc 'edit' (từ ADM003) 
-  // Đọc từ sessionStorage; mặc định là 'add' nếu chưa set
-  const mode: FormMode =
-    (typeof window !== 'undefined'
-      ? (sessionStorage.getItem(SESSION_KEY_MODE) as FormMode | null)
-      : null) ?? 'add';
+  //đọc edit id từ đường dẫn (?employeeId=???)
+  const editIdRaw = searchParams.get('employeeId');
+  //nếu có edit Id thì trả về editId còn không thì trả về null.
+  const editId = editIdRaw && /^\d+$/.test(editIdRaw) ? editIdRaw : null;
 
+  // Xác định mode: 'add' hoặc 'edit' bằng editId
+  const mode: FormMode = editId ? MODE_EDIT : MODE_ADD;
+
+  const resolverSchema = mode === MODE_ADD ? addEmployeeSchema : updateEmployeeSchema;
   // react-hook-form: quản lý state và validation cho EmployeeFormData
   const {
     register,   // Đăng ký input thường (text, select, number)
@@ -69,7 +74,7 @@ export function useADM004() {
     formState: { errors },
     reset,
   } = useForm<EmployeeFormData>({
-    resolver: zodResolver(employeeSchema), // Kết nối Zod schema để validate
+    resolver: zodResolver(resolverSchema), // Kết nối Zod schema để validate
     defaultValues: DEFAULT_FORM_VALUES,
     mode: 'onBlur', // Validate ngay khi người dùng bấm vào trường
     shouldFocusError: true
@@ -80,20 +85,49 @@ export function useADM004() {
   const selectedCertId = watch('certificationId'); // watch('certificationId') re-render component mỗi khi giá trị thay đổi
   const isCertSelected = selectedCertId !== ''; // isCertSelected = true khi người dùng đã chọn chứng chỉ (khác chuỗi rỗng)
 
-  // Khôi phục dữ liệu form từ sessionStorage khi người dùng bấm 戻る từ ADM005
+  /**
+   * 
+   */
   useEffect(() => {
     const storedEmployeeJson = sessionStorage.getItem(SESSION_KEY_EMPLOYEE_DATA);
     if (storedEmployeeJson) {
       try {
         reset(JSON.parse(storedEmployeeJson) as EmployeeFormData);
       } catch {
-        // Bỏ qua nếu dữ liệu trong sessionStorage không hợp lệ (JSON parse lỗi)
+        sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
+        return;
       }
-    } else if (mode === 'edit') {
-      // Xử lí sau.
     }
-    sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
-  }, [reset]);
+
+    if (mode === MODE_EDIT && editId) {
+      (async () => {
+        const result = await getEmployeeDetail(Number(editId));
+        if (result.ok && result.employee) {
+          const employee = result.employee;
+          const certification = employee.certifications?.[0];
+          reset({
+            loginId: employee.employeeLoginId,
+            departmentId: String(employee.departmentId ?? ''),
+            employeeName: employee.employeeName,
+            employeeNameKana: employee.employeeNameKana,
+            birthDate: employee.employeeBirthDate,
+            employeeEmail: employee.employeeEmail,
+            employeeTelephone: employee.employeeTelephone,
+            loginPassword: '',
+            loginPasswordConfirm: '',
+            certificationId: String(certification?.certificationId ?? ''),
+            certificationStartDate: certification?.startDate,
+            certificationEndDate: certification?.endDate,
+            score: certification ? String(certification.score ?? '') : '',
+          });
+        } else {
+          sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, result.message || formatMessage('ER015'));
+          router.replace('/employees/system-error');
+        }
+      })();
+    }
+
+  }, []);
 
 
   // Khi bỏ chọn chứng chỉ (certificationId trở về '') → tự động reset 3 field phụ
@@ -117,7 +151,7 @@ export function useADM004() {
   //check trùng và check tồn tại từ api.
   const handleConfirm = handleSubmit(async (data: EmployeeFormData) => {
     const [isDuplicate, deptNotExists, certNotExists] = await Promise.all([
-      mode === 'add' ? checkLoginIdDuplicate(data.loginId) : Promise.resolve(false),
+      mode === MODE_ADD ? checkLoginIdDuplicate(data.loginId) : Promise.resolve(false),
       checkDepartmentNotExists(data.departmentId),
       data.certificationId ? checkCertificationNotExists(data.certificationId) : Promise.resolve(false)
     ]);
@@ -154,7 +188,8 @@ export function useADM004() {
 
     // Lưu dữ liệu đã validate vào sessionStorage để ADM005 đọc
     sessionStorage.setItem(SESSION_KEY_EMPLOYEE_DATA, JSON.stringify(data));
-    router.push('/employees/confirm');
+    const isId = editId ? `?employeeId=${editId}` : '';
+    router.push(`/employees/confirm${isId}`);
   });
 
 

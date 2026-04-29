@@ -16,8 +16,9 @@ import { UseFormRegister, Control, FieldErrors, Controller } from 'react-hook-fo
 import DatePicker from 'react-datepicker';
 import { parse, format } from 'date-fns';
 import 'react-datepicker/dist/react-datepicker.css';
-import { EmployeeFormData } from '@/types/employee';
+import { EmployeeFormData, FormMode } from '@/types/employee';
 import { Department } from '@/types/department';
+import { MODE_ADD, MODE_EDIT } from '@/lib/constants/employee';
 
 /** Props nhận từ EmployeeInputForm */
 type Props = {
@@ -29,13 +30,15 @@ type Props = {
   errors: FieldErrors<EmployeeFormData>;
   /** Danh sách phòng ban từ API, dùng để render option trong dropdown グループ */
   departments: Department[];
+  /** Mode của form */
+  mode: FormMode;
 };
 
 /**
  * Nhóm field thông tin cá nhân nhân viên (phần trên của form ADM004).
  * Mỗi field là 1 <li> theo cấu trúc mockup.
  */
-export default function EmployeeInfoFields({ register, control, errors, departments }: Props) {
+export default function EmployeeInfoFields({ register, control, errors, departments, mode }: Props) {
   // Ref riêng để bấm icon lịch mở DatePicker — không liên quan đến field.ref của Controller
   const birthDateRef = useRef<DatePicker>(null);
 
@@ -51,6 +54,8 @@ export default function EmployeeInfoFields({ register, control, errors, departme
             type="text"
             className={`form-control${errors.loginId ? ' is-invalid' : ''}`} // class is-invalid nếu có lỗi để highlight
             {...register('loginId')}
+            disabled={mode === MODE_EDIT}
+            style={mode === MODE_EDIT ? { cursor: 'not-allowed' } : undefined}
           />
           {/* Hiển thị lỗi validation của từng field ngay bên dưới input */}
           {errors.loginId && (
@@ -193,39 +198,43 @@ export default function EmployeeInfoFields({ register, control, errors, departme
         </div>
       </li>
 
-      {/* パスワード (Mật khẩu) */}
-      <li className="form-group row d-flex">
-        <label className="col-form-label col-sm-2">
-          <i className="relative">パスワード:<span className="note-red">*</span></i>
-        </label>
-        <div className="col-sm col-sm-10">
-          <input
-            type="password"
-            className={`form-control${errors.loginPassword ? ' is-invalid' : ''}`}
-            {...register('loginPassword')}
-          />
-          {errors.loginPassword && (
-            <div className="invalid-feedback d-block">{errors.loginPassword.message}</div>
-          )}
-        </div>
-      </li>
+      {mode === MODE_ADD && (
+        <>
+          {/* パスワード (Mật khẩu) */}
+          <li className="form-group row d-flex">
+            <label className="col-form-label col-sm-2">
+              <i className="relative">パスワード:<span className="note-red">*</span></i>
+            </label>
+            <div className="col-sm col-sm-10">
+              <input
+                type="password"
+                className={`form-control${errors.loginPassword ? ' is-invalid' : ''}`}
+                {...register('loginPassword')}
+              />
+              {errors.loginPassword && (
+                <div className="invalid-feedback d-block">{errors.loginPassword.message}</div>
+              )}
+            </div>
+          </li>
 
-      {/* パスワード（確認）(Xác nhận mật khẩu) — không bắt buộc theo mockup */}
-      <li className="form-group row d-flex">
-        <label className="col-form-label col-sm-2">
-          <i className="relative">パスワード（確認）:</i>
-        </label>
-        <div className="col-sm col-sm-10">
-          <input
-            type="password"
-            className={`form-control${errors.loginPasswordConfirm ? ' is-invalid' : ''}`}
-            {...register('loginPasswordConfirm')}
-          />
-          {errors.loginPasswordConfirm && (
-            <div className="invalid-feedback d-block">{errors.loginPasswordConfirm.message}</div>
-          )}
-        </div>
-      </li>
+          {/* パスワード（確認）(Xác nhận mật khẩu) — không bắt buộc theo mockup */}
+          <li className="form-group row d-flex">
+            <label className="col-form-label col-sm-2">
+              <i className="relative">パスワード（確認）:</i>
+            </label>
+            <div className="col-sm col-sm-10">
+              <input
+                type="password"
+                className={`form-control${errors.loginPasswordConfirm ? ' is-invalid' : ''}`}
+                {...register('loginPasswordConfirm')}
+              />
+              {errors.loginPasswordConfirm && (
+                <div className="invalid-feedback d-block">{errors.loginPasswordConfirm.message}</div>
+              )}
+            </div>
+          </li>
+        </>
+      )}
     </>
   );
 }

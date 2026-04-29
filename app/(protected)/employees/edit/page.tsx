@@ -19,6 +19,7 @@ export default function EmployeeEditPage() {
   // Toàn bộ state, dropdown data, handlers từ hook
   const {
     register,
+    mode,
     control,
     errors,
     departments,
@@ -33,6 +34,7 @@ export default function EmployeeEditPage() {
 
   return (
     <EmployeeInputForm
+      mode={mode}
       register={register}
       control={control}
       errors={errors}

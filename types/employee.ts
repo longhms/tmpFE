@@ -110,9 +110,9 @@ export interface EmployeeFormData {
   /** Số điện thoại */
   employeeTelephone: string;
   /** Mật khẩu đăng nhập */
-  loginPassword: string;
+  loginPassword?: string;
   /** Xác nhận mật khẩu */
-  loginPasswordConfirm: string;
+  loginPasswordConfirm?: string;
   /** ID chứng chỉ JP ('' nếu không có chứng chỉ) */
   certificationId: string;
   /** Ngày cấp chứng chỉ, định dạng 'yyyy/MM/dd' ('' nếu không có chứng chỉ) */

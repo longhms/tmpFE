@@ -231,3 +231,25 @@ export const getEmployeeDetail = async (
     return { ok: false, message: formatMessage('ER015') };
   }
 };
+
+/**
+ * gọi API với phương thức put để cập nhật nhân viên.
+ * 
+ * @param employeeId id nhân viên
+ * @param data thông tin nhân viên
+ * @returns { ok, message, employeeId }
+ */
+export const updateEmployee = async (
+  employeeId:number, 
+  data: EmployeeFormData
+  ): Promise<CreateEmployeeResult> => {
+  const payload = toCreateEmployeePayload(data);
+  const res = await apiClient.put(`/employee/${employeeId}`, payload);
+  const { code, message } = res.data;
+
+  return {
+    ok: code === 200,
+    message: message ? formatMessage(message.code, message.params) : '',
+    employeeId,
+  };
+};

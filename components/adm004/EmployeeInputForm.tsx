@@ -10,7 +10,7 @@
 'use client';
 
 import { UseFormRegister, Control, FieldErrors } from 'react-hook-form';
-import { EmployeeFormData } from '@/types/employee';
+import { EmployeeFormData, FormMode } from '@/types/employee';
 import { Department } from '@/types/department';
 import { Certification } from '@/types/certification';
 import EmployeeInfoFields from './EmployeeInfoFields';
@@ -44,6 +44,8 @@ type Props = {
   onConfirm: React.FormEventHandler<HTMLFormElement>;
   /** Handler nút 戻る */
   onBack: () => void;
+  /** Mode của form */
+  mode: FormMode;
 };
 
 /**
@@ -52,6 +54,7 @@ type Props = {
  */
 export default function EmployeeInputForm({
   register,
+  mode,
   control,
   errors,
   departments,
@@ -85,6 +88,7 @@ export default function EmployeeInputForm({
             control={control}
             errors={errors}
             departments={departments}
+            mode={mode}
           />
 
           {/* Section 日本語能力: tiêu đề + 資格 → 点数 (với disabled logic) */}

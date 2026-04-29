@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import EmployeeListPage from '@/app/(protected)/employees/list/page';
 import EmployeeEditPage from '@/app/(protected)/employees/edit/page';
-import EmployeeDetailPage from '@/app/(protected)/employees/detail/page';
+import EmployeeDetailPage from '@/app/(protected)/employees/detail/[employeeId]/page';
 import EmployeeConfirmPage from '@/app/(protected)/employees/confirm/page';
 import EmployeeCompletePage from '@/app/(protected)/employees/complete/page';
 import HomePage from '@/app/page';

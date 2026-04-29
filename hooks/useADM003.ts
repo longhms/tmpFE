@@ -10,6 +10,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   SESSION_KEY_ERROR_MESSAGE,
   SESSION_KEY_COMPLETE_MESSAGE,
+  SESSION_KEY_EMPLOYEE_DATA,
 } from '@/types/employee';
 import { EmployeeDetail } from '@/types/employee';
 import { getEmployeeDetail, deleteEmployee } from '@/services/employeeService';
@@ -86,7 +87,8 @@ export function useADM003() {
    */
   const handleEdit = useCallback(() => {
     if (!employee) return;
-    router.push(`/employees/edit/${employee.employeeId}`);
+    sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
+    router.push(`/employees/edit?employeeId=${employee.employeeId}`);
   }, [router, employee]);
 
   /**

@@ -14,7 +14,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useDepartments } from './useDepartments';
 import { useCertifications } from './useCertifications';
 import {
@@ -22,12 +22,18 @@ import {
   SESSION_KEY_EMPLOYEE_DATA,
   SESSION_KEY_COMPLETE_MESSAGE,
   SESSION_KEY_ERROR_MESSAGE,
+  FormMode,
 } from '@/types/employee';
-import { createEmployee } from '@/services/employeeService';
+import { createEmployee, updateEmployee } from '@/services/employeeService';
 import { formatMessage } from '@/lib/constants/messages';
+import { MODE_ADD, MODE_EDIT } from '@/lib/constants/employee';
 
 export function useADM005() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editIdRaw = searchParams.get('employeeId');
+  const editId = editIdRaw && /^\d+$/.test(editIdRaw) ? editIdRaw : null;
+  const mode: FormMode = editId ? MODE_EDIT : MODE_ADD;
 
   // ── Đọc dữ liệu form đã validate từ sessionStorage ──
   // Dữ liệu được lưu bởi ADM004 sau khi react-hook-form validate thành công.
@@ -82,7 +88,10 @@ export function useADM005() {
     if (!employeeFormData || submitting) return;
     setSubmitting(true);
     try {
-      const result = await createEmployee(employeeFormData);
+      const result = mode === MODE_ADD && !editId
+        ? await createEmployee(employeeFormData)
+        : await updateEmployee(Number(editId), employeeFormData);
+      // Xóa dữ liệu form sau khi lưu thành công
       if (result.ok) {
         sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
         sessionStorage.setItem(SESSION_KEY_COMPLETE_MESSAGE, result.message);
@@ -97,7 +106,7 @@ export function useADM005() {
     } finally {
       setSubmitting(false);
     }
-  }, [employeeFormData, submitting, router]);
+  }, [employeeFormData, submitting, mode, editId, router]);
 
   // ── handleBack: quay lại ADM004 với dữ liệu form vẫn còn trong sessionStorage ──
   // router.back() đảm bảo ADM004 khôi phục đúng trạng thái form trước đó
