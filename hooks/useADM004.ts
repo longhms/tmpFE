@@ -27,11 +27,11 @@ import {
   FormMode,
   SESSION_KEY_EMPLOYEE_DATA,
   SESSION_KEY_ERROR_MESSAGE,
-  SESSION_KEY_MODE,
 } from '@/types/employee';
 import { checkLoginIdDuplicate, checkCertificationNotExists, checkDepartmentNotExists, getEmployeeDetail } from '@/services/employeeService';
-import { formatMessage } from '@/lib/constants/messages';
+import { ERROR_MESSAGES, formatMessage } from '@/lib/constants/messages';
 import { MODE_ADD, MODE_EDIT } from '@/lib/constants/employee';
+import { FIELD } from '@/lib/constants/validation';
 
 /** Giá trị mặc định cho toàn bộ form (tất cả rỗng) */
 const DEFAULT_FORM_VALUES: EmployeeFormData = {
@@ -80,12 +80,13 @@ export function useADM004() {
     shouldFocusError: true
   });
 
-  const { departments, departmentError } = useDepartments(); // useDepartments từ
+  const { departments, departmentError } = useDepartments(); // useDepartments từ hook
   const { certifications, certificationError } = useCertifications(); // danh sách chứng chỉ JP
   const selectedCertId = watch('certificationId'); // watch('certificationId') re-render component mỗi khi giá trị thay đổi
   const isCertSelected = selectedCertId !== ''; // isCertSelected = true khi người dùng đã chọn chứng chỉ (khác chuỗi rỗng)
 
   /**
+   * Khi component lần đầu render hoặc editId thay đổi -> xử lý khôi phục dữ liệu hoặc gọi API.
    * 
    */
   useEffect(() => {
@@ -161,7 +162,7 @@ export function useADM004() {
     if (isDuplicate) {
       setError('loginId', {
         type: 'server',
-        message: formatMessage('ER003', ['アカウント名']),
+        message: formatMessage(ERROR_MESSAGES.ER003, [FIELD.LOGIN_ID]),
       });
       hasError = true;
     }
@@ -169,7 +170,7 @@ export function useADM004() {
     if (deptNotExists) {
       setError('departmentId', {
         type: 'server',
-        message: formatMessage('ER004', ['グループ']),
+        message: formatMessage(ERROR_MESSAGES.ER004, [FIELD.GROUP]),
       });
       hasError = true;
     }
@@ -177,7 +178,7 @@ export function useADM004() {
     if (certNotExists) {
       setError('certificationId', {
         type: 'server',
-        message: formatMessage('ER004', ['資格']),
+        message: formatMessage(ERROR_MESSAGES.ER004, [FIELD.CERTIFICATION_ID]),
       });
       hasError = true;
     }

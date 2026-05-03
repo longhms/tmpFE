@@ -23,7 +23,7 @@ import { formatMessage } from '@/lib/constants/messages';
  *   - Không hợp lệ -> redirect về /employees/list.
  *   - Gọi GET /employee/{id} để lấy dữ liệu chi tiết.
  *   - Lỗi (ER013/ER015,...) -> lưu message và redirect về /employees/system-error.
- *   - handleEdit -> ADM004 ở chế độ edit (sẽ wire URL khi làm edit).
+ *   - handleEdit -> ADM004 ở chế độ edit.
  *   - handleDelete -> mở dialog xác nhận; OK gọi DELETE; ER020 hiển thị inline.
  *   - handleBack -> router.back() giữ nguyên search/sort/page của ADM002.
  *
@@ -48,10 +48,10 @@ export function useADM003() {
     if (typeof window === 'undefined') return;
 
     // ── Lấy employeeId từ URL params ──
-    const raw = params?.employeeId;
-    const idStr = Array.isArray(raw) ? raw[0] : raw;
-    const id = idStr ? Number(idStr) : NaN;
-    if (!idStr || !Number.isFinite(id) || id <= 0) {
+    const employeeId = params?.employeeId;
+    const idString = Array.isArray(employeeId) ? employeeId[0] : employeeId;
+    const id = idString ? Number(idString) : NaN;
+    if (!idString || !Number.isFinite(id) || id <= 0) {
       // URL không hợp lệ -> trả về list.
       router.replace('/employees/list');
       return;
@@ -87,8 +87,8 @@ export function useADM003() {
    */
   const handleEdit = useCallback(() => {
     if (!employee) return;
-    sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
     router.push(`/employees/edit?employeeId=${employee.employeeId}`);
+    sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
   }, [router, employee]);
 
   /**

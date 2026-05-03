@@ -74,8 +74,12 @@ export const fetchEmployeeList = async (
  * @returns true nếu đã tồn tại (trùng)
  */
 export const checkLoginIdDuplicate = async (loginId: string): Promise<boolean> => {
-  const res = await apiClient.get(`/employee/check-employee-login-id?loginId=${loginId}`);
-  return res.data.code !== 200;
+  try {
+    const res = await apiClient.get(`/employee/check-employee-login-id?loginId=${encodeURIComponent(loginId)}`);
+    return res.data.code !== 200;
+  } catch {
+    return true;
+  }
 };
 
 /**
@@ -85,8 +89,12 @@ export const checkLoginIdDuplicate = async (loginId: string): Promise<boolean> =
  * @returns true nếu KHÔNG tồn tại (lỗi ER004)
  */
 export const checkDepartmentNotExists = async (departmentId: string): Promise<boolean> => {
-  const res = await apiClient.get(`/employee/check-refs-exist?departmentId=${departmentId}`);
-  return res.data.code !== 200;
+  try {
+    const res = await apiClient.get(`/employee/check-refs-exist?departmentId=${encodeURIComponent(departmentId)}`);
+    return res.data.code !== 200;
+  } catch {
+    return true;
+  }
 };
 
 /**
@@ -96,8 +104,12 @@ export const checkDepartmentNotExists = async (departmentId: string): Promise<bo
  * @returns true nếu KHÔNG tồn tại (lỗi ER004)
  */
 export const checkCertificationNotExists = async (certificationId: string): Promise<boolean> => {
-  const res = await apiClient.get(`/employee/check-refs-exist?certificationId=${certificationId}`);
-  return res.data.code !== 200;
+  try {
+    const res = await apiClient.get(`/employee/check-refs-exist?certificationId=${encodeURIComponent(certificationId)}`);
+    return res.data.code !== 200;
+  } catch {
+    return true;
+  }
 };
 
 /**
@@ -144,19 +156,34 @@ export function toCreateEmployeePayload(
 export const createEmployee = async (
   data: EmployeeFormData
 ): Promise<CreateEmployeeResult> => {
-  const payload = toCreateEmployeePayload(data);
-  const res = await apiClient.post('/employee', payload);
+  try {
+    const payload = toCreateEmployeePayload(data);
+    const res = await apiClient.post('/employee', payload);
 
-  const { code, employeeId, message } = res.data;
-  const formatted = message
-    ? formatMessage(message.code, message.params)
-    : '';
+    const { code, employeeId, message } = res.data;
+    const formatted = message
+      ? formatMessage(message.code, message.params)
+      : '';
 
-  return {
-    ok: code === 200,
-    message: formatted,
-    employeeId,
-  };
+    return {
+      ok: code === 200,
+      message: formatted,
+      employeeId,
+    };
+  } catch (err: unknown) {
+    const axiosErr = err as {
+      response?: { data?: { message?: { code?: string; params?: string[] } } };
+    };
+    const data = axiosErr.response?.data;
+    if (data?.message?.code) {
+      return {
+        ok: false,
+        message: formatMessage(data.message.code, data.message.params),
+        employeeId: 0,
+      };
+    }
+    return { ok: false, message: formatMessage('ER015'), employeeId: 0 };
+  }
 };
 
 /**
@@ -240,16 +267,31 @@ export const getEmployeeDetail = async (
  * @returns { ok, message, employeeId }
  */
 export const updateEmployee = async (
-  employeeId:number, 
+  employeeId: number,
   data: EmployeeFormData
-  ): Promise<CreateEmployeeResult> => {
-  const payload = toCreateEmployeePayload(data);
-  const res = await apiClient.put(`/employee/${employeeId}`, payload);
-  const { code, message } = res.data;
+): Promise<CreateEmployeeResult> => {
+  try {
+    const payload = toCreateEmployeePayload(data);
+    const res = await apiClient.put(`/employee/${employeeId}`, payload);
+    const { code, message } = res.data;
 
-  return {
-    ok: code === 200,
-    message: message ? formatMessage(message.code, message.params) : '',
-    employeeId,
-  };
+    return {
+      ok: code === 200,
+      message: message ? formatMessage(message.code, message.params) : '',
+      employeeId,
+    };
+  } catch (err: unknown) {
+    const axiosErr = err as {
+      response?: { data?: { message?: { code?: string; params?: string[] } } };
+    };
+    const data = axiosErr.response?.data;
+    if (data?.message?.code) {
+      return {
+        ok: false,
+        message: formatMessage(data.message.code, data.message.params),
+        employeeId,
+      };
+    }
+    return { ok: false, message: formatMessage('ER015'), employeeId };
+  }
 };

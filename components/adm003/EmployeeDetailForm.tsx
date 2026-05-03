@@ -2,14 +2,6 @@
  * Copyright(C) [2026] [Luvina Software Company]
  * [EmployeeDetailForm.tsx], [Apr, 2026] [ntlong]
  *
- * Component hien thi chi tiet nhan vien (ADM003) — read-only.
- *
- * Gom:
- *   - Section thong tin ca nhan: アカウント名, グループ, 氏名, カタカナ氏名,
- *     生年月日, メールアドレス, 電話番号.
- *   - Section 日本語能力: neu co nhieu chung chi -> render lap nhom
- *     (資格, 資格交付日, 失効日, 点数) theo sort certificationLevel DESC tu BE.
- *   - Nhom button: 編集 / 削除 / 戻る.
  */
 
 'use client';
@@ -19,24 +11,34 @@ import { EmployeeDetail } from '@/types/employee';
 import { formatMessage } from '@/lib/constants/messages';
 
 type Props = {
-  /** Du lieu chi tiet nhan vien — null khi dang load hoac chua co */
+  /** Dữ liệu chi tiết nhân viên — null khi đang load hoặc chưa có */
   employee: EmployeeDetail | null;
-  /** Handler nut 編集 */
+  /** Handler nút 編集 */
   onEdit: () => void;
-  /** Handler nut 削除 — mo dialog xac nhan */
+  /** Handler nút 削除 — mở dialog xác nhận */
   onDelete: () => void;
-  /** Handler nut 戻る */
+  /** Handler nút 戻る */
   onBack: () => void;
-  /** Hien thi dialog xac nhan xoa */
+  /** Hiển thị dialog xác nhận xóa */
   showConfirm: boolean;
-  /** Thong bao loi xoa inline (ER020) */
+  /** Thông báo lỗi xóa inline (ER020) */
   deleteError: string;
-  /** Xac nhan xoa trong dialog */
+  /** Xác nhận xóa trong dialog */
   onConfirmDelete: () => void;
-  /** Huy xoa, dong dialog */
+  /** Hủy xóa, đóng dialog */
   onCancelDelete: () => void;
 };
 
+/**
+ * Component hiển thị chi tiết nhân viên (ADM003) — read-only.
+ *
+ * Gồm:
+ *   - Section thông tin cá nhân: アカウント名, グループ, 氏名, カタカナ氏名,
+ *     生年月日, メールアドレス, 電話番号.
+ *   - Section 日本語能力: nếu có nhiều chứng chỉ -> render lặp nhóm
+ *     (資格, 資格交付日, 失効日, 点数) theo sort certificationLevel DESC từ BE.
+ *   - Nhóm button: 編集 / 削除 / 戻る.
+ */
 export default function EmployeeDetailForm({
   employee,
   onEdit,
@@ -47,14 +49,14 @@ export default function EmployeeDetailForm({
   onConfirmDelete,
   onCancelDelete,
 }: Props) {
-  // Chua co du lieu -> khong render de tranh hien thi rong
+  // Chưa có dữ liệu -> không render để tránh hiển thị rỗng
   if (!employee) return null;
 
   const certs = employee.certifications ?? [];
 
   return (
     <>
-    {/* Dialog xac nhan xoa (MSG004) */}
+    {/* Dialog xác nhận xóa (MSG004) */}
     {showConfirm && (
       <div style={{
         position: 'fixed', inset: 0,
@@ -81,7 +83,7 @@ export default function EmployeeDetailForm({
         <ul className="show-data">
           <li className="title">情報確認</li>
 
-          {/* ── Section thong tin ca nhan ── */}
+          {/* ── Section thông tin cá nhân ── */}
           <li className="form-group row d-flex">
             <label className="col-form-label col-sm-2">アカウント名</label>
             <div className="col-sm col-sm-10">{employee.employeeLoginId}</div>
@@ -144,7 +146,7 @@ export default function EmployeeDetailForm({
             </Fragment>
           ) : (
             certs.map((c, idx) => (
-              // React.Fragment voi key — tranh <div> khong hop le trong <ul>
+              // React.Fragment với key — tránh <div> không hợp lệ trong <ul>
               <Fragment key={`${c.certificationId}-${idx}`}>
                 <li className="form-group row d-flex">
                   <label className="col-form-label col-sm-2">資格</label>
@@ -166,14 +168,14 @@ export default function EmployeeDetailForm({
             ))
           )}
 
-          {/* Loi xoa inline (ER020: khong the xoa admin) */}
+          {/* Lỗi xóa inline (ER020: không thể xóa admin) */}
           {deleteError && (
             <li className="form-group row d-flex">
               <div className="col-sm col-sm-10 ml text-danger">{deleteError}</div>
             </li>
           )}
 
-          {/* ── Nhom button ── */}
+          {/* ── Nhóm button ── */}
           <li className="form-group row d-flex">
             <div className="btn-group col-sm col-sm-10 ml">
               <button
