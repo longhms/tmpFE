@@ -19,8 +19,8 @@ import { formatMessage } from '@/lib/constants/messages';
 /**
  * Custom hook quản lý logic màn hình Chi tiết nhân viên (ADM003).
  *
- *   - Đọc employeeId từ URL params (route: /employees/detail/[employeeId]).
- *   - Không hợp lệ -> redirect về /employees/list.
+ *   - Đọc employeeId từ URL params (route: /employees/adm003/[employeeId]).
+ *   - Không hợp lệ -> redirect về /employees/adm002.
  *   - Gọi GET /employee/{id} để lấy dữ liệu chi tiết.
  *   - Lỗi (ER013/ER015,...) -> lưu message và redirect về /employees/system-error.
  *   - handleEdit -> ADM004 ở chế độ edit.
@@ -53,7 +53,7 @@ export function useADM003() {
     const id = idString ? Number(idString) : NaN;
     if (!idString || !Number.isFinite(id) || id <= 0) {
       // URL không hợp lệ -> trả về list.
-      router.replace('/employees/list');
+      router.replace('/employees/adm002');
       return;
     }
 
@@ -87,7 +87,7 @@ export function useADM003() {
    */
   const handleEdit = useCallback(() => {
     if (!employee) return;
-    router.push(`/employees/edit?employeeId=${employee.employeeId}`);
+    router.push(`/employees/adm004?employeeId=${employee.employeeId}`);
     sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
   }, [router, employee]);
 

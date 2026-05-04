@@ -24,7 +24,7 @@ export default function SystemErrorPage() {
                 <div className="notification-box-btn">
                     <button
                         type="button"
-                        onClick={() => router.push('/employees/list')}
+                        onClick={() => router.push('/employees/adm002')}
                         className="btn btn-primary btn-sm"
                     >
                         OK

@@ -93,18 +93,24 @@ export function useADM004() {
   const selectedCertId = watch('certificationId'); // watch('certificationId') re-render component mỗi khi giá trị thay đổi
   const isCertSelected = selectedCertId !== ''; // isCertSelected = true khi người dùng đã chọn chứng chỉ (khác chuỗi rỗng)
 
-  /**
-   * Khi component lần đầu render hoặc editId thay đổi -> xử lý khôi phục dữ liệu hoặc gọi API.
-   * 
-   */
+  // Đợi dropdowns load xong (hoặc lỗi) rồi mới reset form để tránh pulldown bị rỗng do <option> chưa render.
+  const initializedRef = useRef(false);
   useEffect(() => {
+    if (initializedRef.current) return;
+    const departmentsReady = departments.length > 0 || !!departmentError;
+    const certificationsReady = certifications.length > 0 || !!certificationError;
+    if (!departmentsReady || !certificationsReady) return;
+    initializedRef.current = true;
+
+    // Ưu tiên sessionStorage (back từ ADM005). Có rồi thì không fetch API nữa
     const storedEmployeeJson = sessionStorage.getItem(SESSION_KEY_EMPLOYEE_DATA);
     if (storedEmployeeJson) {
       try {
         reset(JSON.parse(storedEmployeeJson) as EmployeeFormData);
-      } catch {
         sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
         return;
+      } catch {
+        sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
       }
     }
 
@@ -146,8 +152,7 @@ export function useADM004() {
         }
       })();
     }
-
-  }, []);
+  }, [departments, certifications, departmentError, certificationError, mode, editId, reset, router]);
 
   // Khi bỏ chọn chứng chỉ (certificationId trở về '') → tự động reset 3 field phụ
   // Tránh gửi lên confirm dữ liệu thừa của lần chọn cũ
@@ -163,9 +168,9 @@ export function useADM004() {
       // Chọn lại đúng cert gốc (chỉ áp dụng cho edit) -> restore từ snapshot
       const original = originalCertificationRef.current;
       if (original && value === original.certificationId) {
-        setValue('certificationStartDate', original.certificationStartDate, { shouldValidate: true });
-        setValue('certificationEndDate', original.certificationEndDate, { shouldValidate: true });
-        setValue('score', original.score, { shouldValidate: true });
+        setValue('certificationStartDate', original.certificationStartDate ?? '', { shouldValidate: true });
+        setValue('certificationEndDate', original.certificationEndDate ?? '', { shouldValidate: true });
+        setValue('score', original.score ?? '', { shouldValidate: true });
         return;
       }
 
@@ -230,14 +235,14 @@ export function useADM004() {
     // Lưu dữ liệu đã validate vào sessionStorage để ADM005 đọc
     sessionStorage.setItem(SESSION_KEY_EMPLOYEE_DATA, JSON.stringify(data));
     const isId = editId ? `?employeeId=${editId}` : '';
-    router.push(`/employees/confirm${isId}`);
+    router.push(`/employees/adm005${isId}`);
   });
 
 
   // ── Xử lý nút 戻る (Back) ──
-  // Dùng router.back() thay vì router.push('/employees/list') để browser
+  // Dùng router.back() thay vì router.push('/employees/adm002') để browser
   // tự khôi phục URL trước đó (có kèm query params như ?name=lo&page=2...).
-  // router.push('/employees/list') sẽ tạo URL mới không có params → mất state.
+  // router.push('/employees/adm002') sẽ tạo URL mới không có params → mất state.
   const handleBack = () => {
     router.back();
     sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);

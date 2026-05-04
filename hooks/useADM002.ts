@@ -63,7 +63,7 @@ function toQueryString(
 
 export function useADM002() {
   const router = useRouter();
-  const pathname = usePathname();   // '/employees/list'
+  const pathname = usePathname();   // '/employees/adm002'
   const searchParams = useSearchParams(); // Đọc query params từ URL hiện tại
 
   // ── Khởi tạo state từ URL query params ──
@@ -240,13 +240,13 @@ export function useADM002() {
 
   /**
    * Xử lý click ID nhân viên → trang chi tiết (ADM003).
-   * Đẩy id lên URL: /employees/detail/{employeeId} → trang ADM003 đọc params.
+   * Đẩy id lên URL: /employees/adm003/{employeeId} → trang ADM003 đọc params.
    * URL ADM002 (có query params) vẫn nằm trong browser history,
    * khi user bấm Back từ ADM003 thì state tự restore.
    */
   const handleClickDetail = useCallback(
     (employeeId: number) => {
-      router.push(`/employees/detail/${employeeId}`);
+      router.push(`/employees/adm003/${employeeId}`);
     },
     [router]
   );
@@ -256,7 +256,7 @@ export function useADM002() {
    * Tương tự handleClickDetail: URL ADM002 vẫn trong history → tự khôi phục khi Back.
    */
   const handleAddEmployee = useCallback(() => {
-    router.push('/employees/edit');
+    router.push('/employees/adm004');
   }, [router]);
 
   /**

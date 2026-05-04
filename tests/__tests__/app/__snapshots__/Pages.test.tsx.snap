@@ -1028,7 +1028,7 @@ exports[`Page Snapshots renders EmployeeListPage unchanged 1`] = `
           class="bor-l-none text-center"
         >
           <a
-            href="/employees/detail"
+            href="/employees/adm003"
           >
             1
           </a>
@@ -1061,7 +1061,7 @@ exports[`Page Snapshots renders EmployeeListPage unchanged 1`] = `
           class="bor-l-none text-center"
         >
           <a
-            href="/employees/detail"
+            href="/employees/adm003"
           >
             2
           </a>
@@ -1094,7 +1094,7 @@ exports[`Page Snapshots renders EmployeeListPage unchanged 1`] = `
           class="bor-l-none text-center"
         >
           <a
-            href="/employees/detail"
+            href="/employees/adm003"
           >
             3
           </a>
@@ -1127,7 +1127,7 @@ exports[`Page Snapshots renders EmployeeListPage unchanged 1`] = `
           class="bor-l-none text-center"
         >
           <a
-            href="/employees/detail"
+            href="/employees/adm003"
           >
             4
           </a>
@@ -1160,7 +1160,7 @@ exports[`Page Snapshots renders EmployeeListPage unchanged 1`] = `
           class="bor-l-none text-center"
         >
           <a
-            href="/employees/detail"
+            href="/employees/adm003"
           >
             5
           </a>
@@ -1387,7 +1387,7 @@ exports[`Page Snapshots renders RootLayout unchanged 1`] = `
                 class="nav-item"
               >
                 <a
-                  href="/employees/list"
+                  href="/employees/adm002"
                 >
                   トップ
                 </a>

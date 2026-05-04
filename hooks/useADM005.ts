@@ -25,7 +25,7 @@ import {
   FormMode,
 } from '@/types/employee';
 import { createEmployee, updateEmployee } from '@/services/employeeService';
-import { formatMessage } from '@/lib/constants/messages';
+import { ERROR_MESSAGES, formatMessage, SUCCESS_MESSAGES } from '@/lib/constants/messages';
 import { MODE_ADD, MODE_EDIT } from '@/lib/constants/employee';
 
 export function useADM005() {
@@ -51,10 +51,10 @@ export function useADM005() {
   });
 
   // ── không có data trên session → redirect về form ──
-  // Tránh người dùng truy cập trực tiếp /employees/confirm mà không qua ADM004
+  // Tránh người dùng truy cập trực tiếp /employees/adm005 mà không qua ADM004
   useEffect(() => {
     if (employeeFormData === null) {
-      router.replace('/employees/edit');
+      router.replace('/employees/adm004');
     }
   }, [employeeFormData, router]);
 
@@ -94,14 +94,15 @@ export function useADM005() {
       // Xóa dữ liệu form sau khi lưu thành công
       if (result.ok) {
         sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);
-        sessionStorage.setItem(SESSION_KEY_COMPLETE_MESSAGE, result.message);
+        const completeMsg = mode === MODE_ADD ? formatMessage(SUCCESS_MESSAGES.MSG001) : formatMessage(SUCCESS_MESSAGES.MSG002);
+        sessionStorage.setItem(SESSION_KEY_COMPLETE_MESSAGE, completeMsg);
         router.push('/employees/complete');
       } else {
-        sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, result.message || formatMessage('ER015'));
+        sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, result.message || formatMessage(ERROR_MESSAGES.ER015));
         router.push('/employees/system-error');
       }
     } catch {
-      sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, formatMessage('ER015'));
+      sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, formatMessage(ERROR_MESSAGES.ER015));
       router.push('/employees/system-error');
     } finally {
       setSubmitting(false);
