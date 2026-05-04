@@ -24,9 +24,6 @@ type Props = {
  * Trả về các <li> element bao gồm cả tiêu đề section.
  */
 export default function CertificationDisplay({ employeeFormData, certificationName }: Props) {
-  // Kiểm tra người dùng có chọn chứng chỉ không (certificationId !== '')
-  const hasCert = Boolean(employeeFormData.certificationId);
-
   return (
     <>
       {/* Tiêu đề section 日本語能力 */}
@@ -34,35 +31,29 @@ export default function CertificationDisplay({ employeeFormData, certificationNa
         <a href="#!">日本語能力</a>
       </li>
 
-      {/* 資格 (Tên chứng chỉ) — luôn hiện, rỗng nếu không chọn */}
+      {/* 資格 (Tên chứng chỉ) — rỗng nếu không chọn */}
       <li className="form-group row d-flex">
         <label className="col-form-label col-sm-2">資格</label>
         <div className="col-sm col-sm-10">{certificationName}</div>
       </li>
 
-      {/* 3 field dưới chỉ hiện khi đã chọn chứng chỉ
-          (nhất quán với ADM004: disabled khi certificationId = '') */}
-      {hasCert && (
-        <>
-          {/* 資格交付日 (Ngày cấp chứng chỉ) */}
-          <li className="form-group row d-flex">
-            <label className="col-form-label col-sm-2">資格交付日</label>
-            <div className="col-sm col-sm-10">{employeeFormData.certificationStartDate}</div>
-          </li>
+      {/* 資格交付日 (Ngày cấp chứng chỉ) — rỗng nếu không chọn */}
+      <li className="form-group row d-flex">
+        <label className="col-form-label col-sm-2">資格交付日</label>
+        <div className="col-sm col-sm-10">{employeeFormData.certificationStartDate}</div>
+      </li>
 
-          {/* 失効日 (Ngày hết hạn chứng chỉ) */}
-          <li className="form-group row d-flex">
-            <label className="col-form-label col-sm-2">失効日</label>
-            <div className="col-sm col-sm-10">{employeeFormData.certificationEndDate}</div>
-          </li>
+      {/* 失効日 (Ngày hết hạn chứng chỉ) — rỗng nếu không chọn */}
+      <li className="form-group row d-flex">
+        <label className="col-form-label col-sm-2">失効日</label>
+        <div className="col-sm col-sm-10">{employeeFormData.certificationEndDate}</div>
+      </li>
 
-          {/* 点数 (Điểm chứng chỉ) */}
-          <li className="form-group row d-flex">
-            <label className="col-form-label col-sm-2">点数</label>
-            <div className="col-sm col-sm-10">{employeeFormData.score}</div>
-          </li>
-        </>
-      )}
+      {/* 点数 (Điểm chứng chỉ) — rỗng nếu không chọn */}
+      <li className="form-group row d-flex">
+        <label className="col-form-label col-sm-2">点数</label>
+        <div className="col-sm col-sm-10">{employeeFormData.score}</div>
+      </li>
     </>
   );
 }

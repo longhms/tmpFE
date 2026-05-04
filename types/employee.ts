@@ -144,6 +144,25 @@ export interface CreateEmployeePayload {
   }[];
 }
 
+/** Payload gửi lên PUT /employee/{id} - khớp EmployeeRequest của BE. */
+export interface UpdateEmployeePayload {
+  employeeId: number;
+  employeeLoginId: string;
+  employeeLoginPassword?: string;
+  departmentId: number;
+  employeeName: string;
+  employeeNameKana: string;
+  employeeBirthDate: string;
+  employeeEmail: string;
+  employeeTelephone: string;
+  certifications: {
+    certificationId: number;
+    startDate: string;
+    endDate: string;
+    score: string;
+  }[];
+}
+
 /** Kết quả trả về cho UI sau khi gọi createEmployee. */
 export interface CreateEmployeeResult {
   ok: boolean;

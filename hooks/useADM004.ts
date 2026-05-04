@@ -15,7 +15,7 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDepartments } from './useDepartments';
@@ -80,6 +80,14 @@ export function useADM004() {
     shouldFocusError: true
   });
 
+  // Lưu certification gốc từ API (chỉ dùng trong edit) để restore khi user chọn lại đúng cert cũ
+  const originalCertificationRef = useRef<{
+    certificationId: string | null;
+    certificationStartDate: string | null;
+    certificationEndDate: string | null;
+    score: string | null;
+  } | null>(null); // null: chưa load/chưa có edit mode
+
   const { departments, departmentError } = useDepartments(); // useDepartments từ hook
   const { certifications, certificationError } = useCertifications(); // danh sách chứng chỉ JP
   const selectedCertId = watch('certificationId'); // watch('certificationId') re-render component mỗi khi giá trị thay đổi
@@ -106,6 +114,17 @@ export function useADM004() {
         if (result.ok && result.employee) {
           const employee = result.employee;
           const certification = employee.certifications?.[0];
+
+          // Nếu edit mode → lưu lại cert gốc
+          if (certification) {
+            originalCertificationRef.current = {
+              certificationId: String(certification.certificationId ?? ''),
+              certificationStartDate: certification.startDate ?? '',
+              certificationEndDate: certification.endDate ?? '',
+              score: certification.score !== null && certification.score !== undefined ? String(certification.score) : '',
+            };
+          }
+
           reset({
             loginId: employee.employeeLoginId,
             departmentId: String(employee.departmentId ?? ''),
@@ -117,8 +136,8 @@ export function useADM004() {
             loginPassword: '',
             loginPasswordConfirm: '',
             certificationId: String(certification?.certificationId ?? ''),
-            certificationStartDate: certification?.startDate,
-            certificationEndDate: certification?.endDate,
+            certificationStartDate: certification?.startDate ?? '',
+            certificationEndDate: certification?.endDate ?? '',
             score: certification ? String(certification.score ?? '') : '',
           });
         } else {
@@ -129,7 +148,6 @@ export function useADM004() {
     }
 
   }, []);
-
 
   // Khi bỏ chọn chứng chỉ (certificationId trở về '') → tự động reset 3 field phụ
   // Tránh gửi lên confirm dữ liệu thừa của lần chọn cũ
@@ -142,6 +160,19 @@ export function useADM004() {
         setValue('certificationEndDate', '', { shouldValidate: true });
         setValue('score', '', { shouldValidate: true });
       }
+      // Chọn lại đúng cert gốc (chỉ áp dụng cho edit) -> restore từ snapshot
+      const original = originalCertificationRef.current;
+      if (original && value === original.certificationId) {
+        setValue('certificationStartDate', original.certificationStartDate, { shouldValidate: true });
+        setValue('certificationEndDate', original.certificationEndDate, { shouldValidate: true });
+        setValue('score', original.score, { shouldValidate: true });
+        return;
+      }
+
+      // Chọn cert khác -> clear 3 field, user nhập lại
+      setValue('certificationStartDate', '', { shouldValidate: true });
+      setValue('certificationEndDate', '', { shouldValidate: true });
+      setValue('score', '', { shouldValidate: true });
     },
     [setValue]
   );
@@ -158,11 +189,18 @@ export function useADM004() {
     ]);
 
     let hasError = false;
+    let focused = false;
+    const focusOnce = (): { shouldFocus: boolean } => {
+      if (focused) return { shouldFocus: false };
+      focused = true;
+      return { shouldFocus: true };
+    };
 
     if (isDuplicate) {
       setError('loginId', {
         type: 'server',
         message: formatMessage(ERROR_MESSAGES.ER003, [FIELD.LOGIN_ID]),
+        ...focusOnce()
       });
       hasError = true;
     }
@@ -171,6 +209,7 @@ export function useADM004() {
       setError('departmentId', {
         type: 'server',
         message: formatMessage(ERROR_MESSAGES.ER004, [FIELD.GROUP]),
+        ...focusOnce()
       });
       hasError = true;
     }
@@ -179,6 +218,7 @@ export function useADM004() {
       setError('certificationId', {
         type: 'server',
         message: formatMessage(ERROR_MESSAGES.ER004, [FIELD.CERTIFICATION_ID]),
+        ...focusOnce()
       });
       hasError = true;
     }

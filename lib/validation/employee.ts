@@ -54,9 +54,9 @@ const baseEmployeeObject = z.object({
     certificationStartDate: dateString,
     certificationEndDate: dateString,
 
-    score: z
-        .string()
-        .regex(REGEX.SCORE, formatMessage(ERROR_MESSAGES.ER008, [FIELD.SCORE])),
+    score: z.string().refine((val) => val === EMPTY_STRING || REGEX.SCORE.test(val), {
+        message: formatMessage(ERROR_MESSAGES.ER008, [FIELD.SCORE]),
+    }),
 });
 
 // ── Helper: gắn các refine cross-field chung cho cả add/update ──
@@ -101,7 +101,7 @@ export const addEmployeeSchema = attachCommonRefines(
     })
 ).refine(
     (d: any) => d.loginPassword === d.loginPasswordConfirm,
-    { message: formatMessage(ERROR_MESSAGES.ER010), path: ['loginPasswordConfirm'] }
+    { message: formatMessage(ERROR_MESSAGES.ER010, [FIELD.PASSWORD, FIELD.PASSWORD_CONFIRM]), path: ['loginPasswordConfirm'] }
 );
 
 // ── Schema cho UPDATE: password optional, KHÔNG check confirm vì FE đã ẩn 2 field ──

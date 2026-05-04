@@ -12,6 +12,7 @@ import {
   EmployeeFormData,
   EmployeeListApiResponse,
   GetEmployeeDetailResult,
+  UpdateEmployeePayload,
 } from '@/types/employee';
 import { SortField, SortOrder } from '@/lib/constants/employee';
 import { formatMessage } from '@/lib/constants/messages';
@@ -75,7 +76,7 @@ export const fetchEmployeeList = async (
  */
 export const checkLoginIdDuplicate = async (loginId: string): Promise<boolean> => {
   try {
-    const res = await apiClient.get(`/employee/check-employee-login-id?loginId=${encodeURIComponent(loginId)}`);
+    const res = await apiClient.get(`/employee/check-refs-exist?employeeLoginId=${encodeURIComponent(loginId)}&mode=add`);
     return res.data.code !== 200;
   } catch {
     return true;
@@ -123,18 +124,54 @@ export function toCreateEmployeePayload(
 ): CreateEmployeePayload {
   const certifications = data.certificationId
     ? [
-        {
-          certificationId: Number(data.certificationId),
-          startDate: data.certificationStartDate,
-          endDate: data.certificationEndDate,
-          score: data.score,
-        },
-      ]
+      {
+        certificationId: Number(data.certificationId),
+        startDate: data.certificationStartDate,
+        endDate: data.certificationEndDate,
+        score: data.score,
+      },
+    ]
     : [];
 
   return {
     employeeLoginId: data.loginId,
-    employeeLoginPassword: data.loginPassword,
+    employeeLoginPassword: data.loginPassword!,
+    departmentId: Number(data.departmentId),
+    employeeName: data.employeeName,
+    employeeNameKana: data.employeeNameKana,
+    employeeBirthDate: data.birthDate,
+    employeeEmail: data.employeeEmail,
+    employeeTelephone: data.employeeTelephone,
+    certifications,
+  };
+}
+
+/**
+ * Convert EmployeeFormData sang UpdateEmployeePayload.
+ * Tương tự create nhưng có thêm employeeId và password là optional.
+ * 
+ * @param employeeId id nhân viên
+ * @param data dữ liệu form
+ */
+export function toUpdateEmployeePayload(
+  employeeId: number,
+  data: EmployeeFormData
+): UpdateEmployeePayload {
+  const certifications = data.certificationId
+    ? [
+      {
+        certificationId: Number(data.certificationId),
+        startDate: data.certificationStartDate,
+        endDate: data.certificationEndDate,
+        score: data.score,
+      },
+    ]
+    : [];
+
+  return {
+    employeeId,
+    employeeLoginId: data.loginId,
+    employeeLoginPassword: data.loginPassword || undefined,
     departmentId: Number(data.departmentId),
     employeeName: data.employeeName,
     employeeNameKana: data.employeeNameKana,
@@ -271,7 +308,7 @@ export const updateEmployee = async (
   data: EmployeeFormData
 ): Promise<CreateEmployeeResult> => {
   try {
-    const payload = toCreateEmployeePayload(data);
+    const payload = toUpdateEmployeePayload(employeeId, data);
     const res = await apiClient.put(`/employee/${employeeId}`, payload);
     const { code, message } = res.data;
 

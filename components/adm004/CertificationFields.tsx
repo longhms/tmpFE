@@ -114,6 +114,7 @@ export default function CertificationFields({
                     field.onChange(date ? format(date, 'yyyy/MM/dd') : '')
                   }
                   onBlur={field.onBlur}
+                  onChangeRaw={(e) => e?.preventDefault()}
                   dateFormat="yyyy/MM/dd"
                 />
               )}

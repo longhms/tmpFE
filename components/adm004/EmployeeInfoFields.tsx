@@ -149,6 +149,7 @@ export default function EmployeeInfoFields({ register, control, errors, departme
                   showYearDropdown
                   dropdownMode="select"
                   dateFormat="yyyy/MM/dd"
+                  onChangeRaw={(e) => e?.preventDefault()}
                 />
               )}
             />
