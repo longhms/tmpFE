@@ -97,6 +97,15 @@ export function useADM004() {
   const initializedRef = useRef(false);
   useEffect(() => {
     if (initializedRef.current) return;
+
+    // URL hỏng (vd ?employeeId=abc) -> redirect /system-error
+    if (editIdRaw && !editId) {
+      initializedRef.current = true;
+      sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, formatMessage(ERROR_MESSAGES.ER022));
+      router.replace('/employees/system-error');
+      return;
+    }
+
     const departmentsReady = departments.length > 0 || !!departmentError;
     const certificationsReady = certifications.length > 0 || !!certificationError;
     if (!departmentsReady || !certificationsReady) return;
@@ -147,7 +156,7 @@ export function useADM004() {
             score: certification ? String(certification.score ?? '') : '',
           });
         } else {
-          sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, result.message || formatMessage('ER015'));
+          sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, result.message || formatMessage(ERROR_MESSAGES.ER015));
           router.replace('/employees/system-error');
         }
       })();

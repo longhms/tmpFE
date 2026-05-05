@@ -39,7 +39,7 @@ const baseEmployeeObject = z.object({
     employeeEmail: z
         .email(formatMessage(ERROR_MESSAGES.ER005, [FIELD.EMAIL]))
         .min(1, formatMessage(ERROR_MESSAGES.ER001, [FIELD.EMAIL]))
-        .max(255, formatMessage(ERROR_MESSAGES.ER006, [FIELD.EMAIL, String(MAX_LENGTH.EMAIL)])),
+        .max(125, formatMessage(ERROR_MESSAGES.ER006, [FIELD.EMAIL, String(MAX_LENGTH.EMAIL)])),
 
     employeeTelephone: z
         .string()

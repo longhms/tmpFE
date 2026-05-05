@@ -2,13 +2,6 @@
  * Copyright(C) [2026] [Luvina Software Company]
  * [useADM005.ts], [Apr, 2026] [ntlong]
  *
- * Custom hook quản lý logic màn hình Xác nhận thông tin nhân viên (ADM005).
- *
- *   - Đọc EmployeeFormData từ sessionStorage (đã validate và lưu ở ADM004)
- *   - Nếu không có data → redirect về ADM004 (chặn truy cập trực tiếp URL)
- *   - Tra cứu departmentName + certificationName từ ID để hiển thị
- *   - handleOK: gọi API lưu → chuyển sang ADM006 (hoàn thành)
- *   - handleBack: router.back() → quay lại ADM004 với dữ liệu form vẫn còn trong sessionStorage
  */
 
 'use client';
@@ -28,6 +21,15 @@ import { createEmployee, updateEmployee } from '@/services/employeeService';
 import { ERROR_MESSAGES, formatMessage, SUCCESS_MESSAGES } from '@/lib/constants/messages';
 import { MODE_ADD, MODE_EDIT } from '@/lib/constants/employee';
 
+/**
+ * Custom hook quản lý logic màn hình Xác nhận thông tin nhân viên (ADM005).
+ *
+ *   - Đọc EmployeeFormData từ sessionStorage (đã validate và lưu ở ADM004)
+ *   - Nếu không có data → redirect về ADM004 (chặn truy cập trực tiếp URL)
+ *   - Tra cứu departmentName + certificationName từ ID để hiển thị
+ *   - handleOK: gọi API lưu → chuyển sang ADM006 (hoàn thành)
+ *   - handleBack: router.back() → quay lại ADM004 với dữ liệu form vẫn còn trong sessionStorage
+ */
 export function useADM005() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,13 +52,17 @@ export function useADM005() {
     }
   });
 
-  // ── không có data trên session → redirect về form ──
-  // Tránh người dùng truy cập trực tiếp /employees/adm005 mà không qua ADM004
+  // ── Check URL không hợp lệ hoặc không có draft → redirect /system-error ──
+  // Trường hợp:
+  //   - URL có ?employeeId=abc (không phải số dương) → URL hỏng.
+  //   - Truy cập trực tiếp /employees/adm005 không qua ADM004 → không có draft.
   useEffect(() => {
-    if (employeeFormData === null) {
-      router.replace('/employees/adm004');
+    const isInvalidUrl = Boolean(editIdRaw) && !editId;
+    if (isInvalidUrl || employeeFormData === null) {
+      sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, formatMessage(ERROR_MESSAGES.ER022));
+      router.replace('/employees/system-error');
     }
-  }, [employeeFormData, router]);
+  }, [editIdRaw, editId, employeeFormData, router]);
 
   // ── Tải danh sách phòng ban và chứng chỉ để tra cứu tên hiển thị ──
   const { departments } = useDepartments();

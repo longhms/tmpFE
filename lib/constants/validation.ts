@@ -5,7 +5,7 @@ export const EMPTY_STRING = '';
 export const MAX_LENGTH = {
     LOGIN_ID: 50,
     NAME: 125,
-    EMAIL: 255,
+    EMAIL: 125,
     TELEPHONE: 50,
     PASSWORD: 50,
     PASSWORD_MIN: 8,
