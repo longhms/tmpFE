@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { useDepartments } from './useDepartments';
 import { useCertifications } from './useCertifications';
 import {
@@ -37,6 +37,15 @@ export function useADM005() {
   const editId = editIdRaw && /^\d+$/.test(editIdRaw) ? editIdRaw : null;
   const mode: FormMode = editId ? MODE_EDIT : MODE_ADD;
 
+  // URL guard strict
+  const allKeys = Array.from(searchParams.keys());
+  const isValidUrl =
+    allKeys.length === 0 ||
+    (allKeys.length === 1 && allKeys[0] === 'employeeId' && editId !== null);
+  if (!isValidUrl) {
+    notFound();
+  }
+
   // ── Đọc dữ liệu form đã validate từ sessionStorage ──
   // Dữ liệu được lưu bởi ADM004 sau khi react-hook-form validate thành công.
   const [employeeFormData] = useState<EmployeeFormData | null>(() => {
@@ -52,17 +61,13 @@ export function useADM005() {
     }
   });
 
-  // ── Check URL không hợp lệ hoặc không có draft → redirect /system-error ──
-  // Trường hợp:
-  //   - URL có ?employeeId=abc (không phải số dương) → URL hỏng.
-  //   - Truy cập trực tiếp /employees/adm005 không qua ADM004 → không có draft.
+  // ── Truy cập trực tiếp /employees/adm005 không qua ADM004 → không có draft → notFound (URL gõ linh tinh) ──
+  // URL có ?employeeId hỏng đã được page-level guard chuyển sang notFound() ngay trong render.
   useEffect(() => {
-    const isInvalidUrl = Boolean(editIdRaw) && !editId;
-    if (isInvalidUrl || employeeFormData === null) {
-      sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, formatMessage(ERROR_MESSAGES.ER022));
-      router.replace('/employees/system-error');
+    if (employeeFormData === null) {
+      notFound();
     }
-  }, [editIdRaw, editId, employeeFormData, router]);
+  }, [employeeFormData]);
 
   // ── Tải danh sách phòng ban và chứng chỉ để tra cứu tên hiển thị ──
   const { departments } = useDepartments();

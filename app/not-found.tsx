@@ -1,26 +1,27 @@
+/*
+ * Copyright(C) [2026] [Luvina Software Company]
+ * [not-found.tsx], [Apr, 2026] [ntlong]
+ */
+
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { SESSION_KEY_ERROR_MESSAGE } from '@/types/employee';
 import { ERROR_MESSAGES, formatMessage } from '@/lib/constants/messages';
 
-export default function SystemErrorPage() {
+/**
+ * Trang 404 toàn ứng dụng.
+ *
+ *   - Catch mọi URL không khớp route nào (/foo, /employees/xyz, ...).
+ *   - Yêu cầu đăng nhập (useAuth redirect /login nếu chưa).
+ *   - Hiển thị message ER022 ("ページが見つかりません。") + nút OK -> ADM002.
+ *
+ * @author [ntlong]
+ */
+export default function NotFoundPage() {
     useAuth();
     const router = useRouter();
-
-    // Đọc session 1 lần ở lazy init
-    const [message] = useState(() => {
-        if (typeof window === 'undefined') return formatMessage(ERROR_MESSAGES.ER015);
-        const stored = sessionStorage.getItem(SESSION_KEY_ERROR_MESSAGE);
-        return stored || formatMessage(ERROR_MESSAGES.ER015);
-    });
-
-    // Xoá session ở effect riêng
-    useEffect(() => {
-        sessionStorage.removeItem(SESSION_KEY_ERROR_MESSAGE);
-    }, []);
+    const message = formatMessage(ERROR_MESSAGES.ER022);
 
     return (
         <div className="notification-box">

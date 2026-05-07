@@ -1,9 +1,6 @@
-/**
+/*
  * Copyright(C) [2026] [Luvina Software Company]
  * [page.tsx], [Apr, 2026] [ntlong]
- *
- * Trang Thêm/Sửa nhân viên (ADM004).
- * Page giữ mỏng: chỉ gọi hook và truyền toàn bộ props xuống EmployeeInputForm.
  */
 
 'use client';
@@ -12,6 +9,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useADM004 } from '@/hooks/useADM004';
 import EmployeeInputForm from '@/components/adm004/EmployeeInputForm';
 
+/**
+ * Trang Thêm/Sửa nhân viên (ADM004).
+ * Page giữ mỏng: chỉ gọi hook và truyền toàn bộ props xuống EmployeeInputForm.
+ * URL guard (?employeeId=abc -> 404) đã được hook xử lý.
+ */
 export default function EmployeeEditPage() {
   // Kiểm tra xác thực: chưa login → redirect về ADM001
   useAuth();

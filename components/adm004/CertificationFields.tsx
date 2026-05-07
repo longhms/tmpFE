@@ -115,6 +115,8 @@ export default function CertificationFields({
                   }
                   onBlur={field.onBlur}
                   onChangeRaw={(e) => e?.preventDefault()}
+                  showMonthDropdown
+                  showYearDropdown
                   dateFormat="yyyy/MM/dd"
                 />
               )}
@@ -161,6 +163,9 @@ export default function CertificationFields({
                     field.onChange(date ? format(date, 'yyyy/MM/dd') : '')
                   }
                   onBlur={field.onBlur}
+                  onChangeRaw={(e) => e?.preventDefault()}
+                  showMonthDropdown
+                  showYearDropdown
                   dateFormat="yyyy/MM/dd"
                 />
               )}

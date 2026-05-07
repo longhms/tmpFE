@@ -17,7 +17,7 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { useDepartments } from './useDepartments';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addEmployeeSchema, updateEmployeeSchema } from '@/lib/validation/employee';
@@ -59,6 +59,15 @@ export function useADM004() {
   //nếu có edit Id thì trả về editId còn không thì trả về null.
   const editId = editIdRaw && /^\d+$/.test(editIdRaw) ? editIdRaw : null;
 
+  // URL guard strict
+  const allKeys = Array.from(searchParams.keys());
+  const isValidUrl =
+    allKeys.length === 0 ||
+    (allKeys.length === 1 && allKeys[0] === 'employeeId' && editId !== null);
+  if (!isValidUrl) {
+    notFound();
+  }
+
   // Xác định mode: 'add' hoặc 'edit' bằng editId
   const mode: FormMode = editId ? MODE_EDIT : MODE_ADD;
 
@@ -98,20 +107,12 @@ export function useADM004() {
   useEffect(() => {
     if (initializedRef.current) return;
 
-    // URL hỏng (vd ?employeeId=abc) -> redirect /system-error
-    if (editIdRaw && !editId) {
-      initializedRef.current = true;
-      sessionStorage.setItem(SESSION_KEY_ERROR_MESSAGE, formatMessage(ERROR_MESSAGES.ER022));
-      router.replace('/employees/system-error');
-      return;
-    }
-
     const departmentsReady = departments.length > 0 || !!departmentError;
     const certificationsReady = certifications.length > 0 || !!certificationError;
     if (!departmentsReady || !certificationsReady) return;
     initializedRef.current = true;
 
-    // Ưu tiên sessionStorage (back từ ADM005). Có rồi thì không fetch API nữa
+    // Ưu tiên sessionStorage (back từ ADM005).
     const storedEmployeeJson = sessionStorage.getItem(SESSION_KEY_EMPLOYEE_DATA);
     if (storedEmployeeJson) {
       try {
@@ -139,7 +140,6 @@ export function useADM004() {
               score: certification.score !== null && certification.score !== undefined ? String(certification.score) : '',
             };
           }
-
           reset({
             loginId: employee.employeeLoginId,
             departmentId: String(employee.departmentId ?? ''),
@@ -249,9 +249,7 @@ export function useADM004() {
 
 
   // ── Xử lý nút 戻る (Back) ──
-  // Dùng router.back() thay vì router.push('/employees/adm002') để browser
-  // tự khôi phục URL trước đó (có kèm query params như ?name=lo&page=2...).
-  // router.push('/employees/adm002') sẽ tạo URL mới không có params → mất state.
+  // Dùng router.back() để browser tự khôi phục URL trước đó (có kèm query params như ?name=lo&page=2...).
   const handleBack = () => {
     router.back();
     sessionStorage.removeItem(SESSION_KEY_EMPLOYEE_DATA);

@@ -4,8 +4,8 @@ export const EMPTY_STRING = '';
 // ===== Length =====
 export const MAX_LENGTH = {
     LOGIN_ID: 50,
-    NAME: 125,
-    EMAIL: 125,
+    NAME: 255,
+    EMAIL: 255,
     TELEPHONE: 50,
     PASSWORD: 50,
     PASSWORD_MIN: 8,
@@ -19,7 +19,7 @@ export const REGEX = {
     TELEPHONE: /^[0-9\-]+$/,
     ASCII: /^[\x00-\x7F]+$/,
     NUMBER: /^[0-9]*$/,
-    SCORE: /^[0-9]+(\.[0-9]+)?$/,
+    SCORE: /^[0-9]{1,3}(\.[0-9]{1,2})?$/,
 };
 
 export const FIELD = {
@@ -36,4 +36,9 @@ export const FIELD = {
     CERTIFICATION_START: '資格交付日',
     CERTIFICATION_END: '失効日',
     SCORE: '点数',
+} as const;
+
+export const FORMAT = {
+    SCORE: 'xxx.xx | xxx.x | xxx',
+    EMAIL: '***@***.***',
 } as const;

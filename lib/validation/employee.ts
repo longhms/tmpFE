@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ERROR_MESSAGES, formatMessage } from '@/lib/constants/messages';
-import { FIELD, REGEX, MAX_LENGTH } from '@/lib/constants/validation';
+import { FIELD, REGEX, MAX_LENGTH, FORMAT } from '@/lib/constants/validation';
 import { DATE_FORMAT, EMPTY_STRING } from '@/lib/constants/employee';
 
 // Check ngày hợp lệ
@@ -15,7 +15,7 @@ const baseEmployeeObject = z.object({
         .string()
         .min(1, formatMessage(ERROR_MESSAGES.ER001, [FIELD.LOGIN_ID]))
         .trim()
-        .max(50, formatMessage(ERROR_MESSAGES.ER006, [FIELD.LOGIN_ID, String(MAX_LENGTH.LOGIN_ID)]))
+        .max(50, formatMessage(ERROR_MESSAGES.ER006, [String(MAX_LENGTH.LOGIN_ID), FIELD.LOGIN_ID]))
         .regex(REGEX.LOGIN_ID, formatMessage(ERROR_MESSAGES.ER019)),
 
     departmentId: z
@@ -26,25 +26,25 @@ const baseEmployeeObject = z.object({
         .string()
         .trim()
         .min(1, formatMessage(ERROR_MESSAGES.ER001, [FIELD.NAME]))
-        .max(125, formatMessage(ERROR_MESSAGES.ER006, [FIELD.NAME, String(MAX_LENGTH.NAME)])),
+        .max(255, formatMessage(ERROR_MESSAGES.ER006, [String(MAX_LENGTH.NAME), FIELD.NAME])),
 
     employeeNameKana: z
         .string()
         .min(1, formatMessage(ERROR_MESSAGES.ER001, [FIELD.NAME_KANA]))
-        .max(125, formatMessage(ERROR_MESSAGES.ER006, [FIELD.NAME_KANA, String(MAX_LENGTH.NAME)]))
+        .max(255, formatMessage(ERROR_MESSAGES.ER006, [String(MAX_LENGTH.NAME), FIELD.NAME_KANA]))
         .regex(REGEX.KANA_HALF_WIDTH, formatMessage(ERROR_MESSAGES.ER009, [FIELD.NAME_KANA])),
 
     birthDate: dateString.min(1, formatMessage(ERROR_MESSAGES.ER001, [FIELD.BIRTH_DATE])),
 
     employeeEmail: z
-        .email(formatMessage(ERROR_MESSAGES.ER005, [FIELD.EMAIL]))
+        .email(formatMessage(ERROR_MESSAGES.ER005, [FIELD.EMAIL, FORMAT.EMAIL]))
         .min(1, formatMessage(ERROR_MESSAGES.ER001, [FIELD.EMAIL]))
-        .max(125, formatMessage(ERROR_MESSAGES.ER006, [FIELD.EMAIL, String(MAX_LENGTH.EMAIL)])),
+        .max(255, formatMessage(ERROR_MESSAGES.ER006, [String(MAX_LENGTH.EMAIL), FIELD.EMAIL])),
 
     employeeTelephone: z
         .string()
         .min(1, formatMessage(ERROR_MESSAGES.ER001, [FIELD.TELEPHONE]))
-        .max(50, formatMessage(ERROR_MESSAGES.ER006, [FIELD.TELEPHONE, String(MAX_LENGTH.TELEPHONE)]))
+        .max(50, formatMessage(ERROR_MESSAGES.ER006, [String(MAX_LENGTH.TELEPHONE), FIELD.TELEPHONE]))
         .regex(REGEX.TELEPHONE, formatMessage(ERROR_MESSAGES.ER018, [FIELD.TELEPHONE]))
         .regex(REGEX.TELEPHONE, formatMessage(ERROR_MESSAGES.ER008, [FIELD.TELEPHONE])),
 
@@ -55,7 +55,7 @@ const baseEmployeeObject = z.object({
     certificationEndDate: dateString,
 
     score: z.string().refine((val) => val === EMPTY_STRING || REGEX.SCORE.test(val), {
-        message: formatMessage(ERROR_MESSAGES.ER008, [FIELD.SCORE]),
+        message: formatMessage(ERROR_MESSAGES.ER005, [FIELD.SCORE, FORMAT.SCORE]),
     }),
 });
 
